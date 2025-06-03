@@ -604,4 +604,257 @@
           y: Math.random() * -canvas.height,
           size: Math.random() * 8 + 4,
           speed: Math.random() * 4 + 1,
-          color
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.y += p.speed;
+          if (p.y > canvas.height) p.y = -p.size;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+        if (document.getElementById('swap-screen').classList.contains('hidden')) return;
+        requestAnimationFrame(animateConfetti);
+      }
+
+      document.getElementById('swap-screen').classList.remove('hidden');
+      document.querySelector('.swap-card').classList.add('show');
+      animateConfetti();
+
+      document.getElementById('confirm-swap-btn').onclick = () => {
+        playSound('click-sound');
+        const target = swapTarget.value;
+        swappedPlayers.push({ from: target, to: swapTeam, round: currentRound });
+        document.getElementById('swap-screen').classList.add('hidden');
+        startNextRound();
+      };
+    }
+
+    function showBonusScreen() {
+      const question = bonusQuestions[Math.floor(Math.random() * bonusQuestions.length)];
+      document.getElementById('bonus-question').textContent = question.q;
+      const bonusWinner = document.getElementById('bonus-winner');
+      bonusWinner.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join('');
+      let timeLeft = 10;
+      document.getElementById('bonus-timer').textContent = `Time: ${timeLeft}s`;
+      const timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('bonus-timer').textContent = `Time: ${timeLeft}s`;
+        if (timeLeft <= 0) clearInterval(timer);
+      }, 1000);
+
+      document.getElementById('bonus-screen').classList.remove('hidden');
+      document.querySelector('.bonus-card').classList.add('show');
+
+      document.getElementById('award-bonus-btn').onclick = () => {
+        playSound('correct-sound');
+        const winner = bonusWinner.value;
+        scores[winner]++;
+        bonusPoints[winner] = (bonusPoints[winner] || 0) + 1;
+        clearInterval(timer);
+        document.getElementById('bonus-screen').classList.add('hidden');
+        startNextRound();
+      };
+    }
+
+    function startNextRound() {
+      document.document.getElementById('game-section').classList.remove('hidden');
+      currentRound++;
+      questionCount = 0;
+      questions = [];
+      hintWords = ['', ''];
+      document.getElementById('hint1').value = '';
+      document.getElementById('hint2').value = '';
+      document.getElementById('guess-section').classList.add('hidden');
+      document.getElementById('question-section').classList.remove('hidden');
+      document.getElementById('hint-section').classList.add('hidden');
+      document.getElementById('questions-list').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      updateGameState();
+    }
+
+    function showTiebreakerScreen(tiedTeams) {
+      const tiebreakerScreen = document.getElementById('tiebreaker-screen');
+      const tiedTeamsText = document.getElementById('tied-teams-text');
+      const tiebreakerButtons = document.getElementById('tiebreaker-buttons');
+      tiebreakerButtons.innerHTML = '';
+      tiedTeamsText.textContent = `${tiedTeams.join(' vs ')}`;
+
+      tiedTeams.forEach((team, i) => {
+        const button = document.createElement('button');
+        button.className = `btn bg-${i === 0 ? 'lime-500' : 'pink-500'}`;
+        button.textContent = `Select ${team}`;
+        button.onclick = () => {
+          playSound('correct-sound');
+          scores[team]++;
+          document.getElementById('tiebreaker-screen').classList.add('hidden');
+          showCelebrationScreen(team);
+        };
+        tiebreakerButtons.appendChild(button);
+      });
+
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('score-screen').classList.add('hidden');
+      document.getElementById('questions-list').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      tiebreakerScreen.classList.remove('hidden');
+    }
+
+    function showCelebrationScreen(winner) {
+      const celebrationScreen = document.getElementById('celebration-screen');
+      const winnerName = document.getElementById('winner-name');
+      winnerName.textContent = winner;
+
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          size: Math.random() * 10 + 5,
+          speed: Math.random() * 5 + 2,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.y += p.speed;
+          if (p.y > canvas.height) p.y = -p.size;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+        if (document.getElementById('celebration-screen').classList.contains('hidden')) return;
+        requestAnimationFrame(animateConfetti);
+      }
+
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('score-screen').classList.add('hidden');
+      document.getElementById('tiebreaker-screen').classList.add('hidden');
+      document.getElementById('questions-list').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      celebrationScreen.classList.remove('hidden');
+      document.querySelector('.celebration-card').classList.add('show');
+      animateConfetti();
+    }
+
+    document.getElementById('submit-guesses').addEventListener('click', () => {
+      playSound('click-sound');
+      let allGuessesEntered = true;
+      let gameEnded = false;
+
+      groups.forEach(group => {
+        const state = guessStates[group];
+        if (state.guess && state.correct !== null) {
+          questions.push({ group, guess: state.guess, correct: state.correct });
+          if (state.correct) {
+            scores[group]++;
+            if (scores[group] >= 10) {
+              gameEnded = true;
+            }
+          }
+        } else {
+          allGuessesEntered = false;
+        }
+      });
+
+      if (!allGuessesEntered) {
+        alert('Please enter a guess and select Correct or Incorrect for each team.');
+        return;
+      }
+
+      showScoreScreen();
+
+      document.getElementById('continue-btn').addEventListener('click', () => {
+        playSound('click-sound');
+        document.getElementById('score-screen').classList.add('hidden');
+        if (gameEnded) {
+          const maxScore = Math.max(...Object.values(scores));
+          const winners = Object.keys(scores).filter(g => scores[g] === maxScore);
+          if (winners.length > 1) {
+            showTiebreakerScreen(winners);
+          } else {
+            showCelebrationScreen(winners[0]);
+          }
+        } else {
+          const rand = Math.random();
+          if (rand < 0.35) showSwapScreen();
+          else if (rand < 0.7) showBonusScreen();
+          else startNextRound();
+        }
+      }, { once: true });
+    });
+
+    document.getElementById('end-game-btn').addEventListener('click', () => {
+      playSound('click-sound');
+      const maxScore = Math.max(...Object.values(scores));
+      const winners = Object.keys(scores).filter(g => scores[g] === maxScore);
+      if (winners.length > 1) {
+        showTiebreakerScreen(winners);
+      } else {
+        showCelebrationScreen(winners[0]);
+      }
+    });
+
+    document.getElementById('new-game-btn-celebration').addEventListener('click', () => {
+      playSound('click-sound');
+      document.getElementById('celebration-screen').classList.add('hidden');
+      document.getElementById('setup-section').classList.remove('hidden');
+      document.getElementById('num-groups').value = '1';
+      document.getElementById('group-names').innerHTML = `
+        <input id="group-name-0" type="text" placeholder="Group 1 Name">
+      `;
+    });
+
+    document.getElementById('new-game-btn').addEventListener('click', () => {
+      playSound('click-sound');
+      document.getElementById('end-game-section').classList.add('hidden');
+      document.getElementById('setup-section').classList.remove('hidden');
+      document.getElementById('num-groups').value = '1';
+      document.getElementById('group-names').innerHTML = `
+        <input id="group-name-0" type="text" placeholder="Group 1 Name">
+      `;
+    });
+
+    function updateGroupSelectors() {
+      const groupSelector = document.getElementById('group-selector');
+      groupSelector.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join('');
+      groupSelector.selectedIndex = currentGroupIndex;
+      document.getElementById('current-team').textContent = `Current Team: ${groups[currentGroupIndex] || 'None'}`;
+    }
+
+    function updateGameState() {
+      document.getElementById('current-round').textContent = `Round: ${currentRound}`;
+      document.getElementById('question-count').textContent = `Questions Asked: ${questionCount}/10`;
+      document.getElementById('hints-display').textContent = `Hints: ${hintWords.join(', ')}`;
+      document.getElementById('questions-list').innerHTML = questions.map(q => {
+        if (q.question) {
+          return `<p><strong>${q.group}</strong>: ${q.question} - <span class="${q.answer === 'Yes' ? 'text-lime-600' : 'text-pink-600'} font-bold">${q.answer}</span></p>`;
+        } else {
+          return `<p><strong>${q.group}</strong> guessed "${q.guess}" - <span class="${q.correct ? 'text-lime-600' : 'text-pink-600'} font-bold">${q.correct ? 'Correct' : 'Incorrect'}</span></p>`;
+        }
+      }).join('');
+      document.getElementById('scores-display').innerHTML = Object.entries(scores)
+        .map(([group, score], index) => {
+          const swaps = swappedPlayers.filter(s => s.to === group && s.round === currentRound - 1);
+          const swapText = swaps.length ? ` (+${swaps.map(s => `Player from ${s.from}`).join(', ')})` : '';
+          return `<div class="score-card" style="--index: ${index}">${group}${swapText}: ${score} points${bonusPoints[group] > 0 ? ` (+${bonusPoints[group]} bonus)` : ''}</div>`;
+        })
+        .join('');
+    }
+  </script>
+</body>
+</html>
