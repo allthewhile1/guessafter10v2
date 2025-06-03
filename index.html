@@ -251,7 +251,9 @@
     <!-- Game Section -->
     <div id="game-section" class="hidden">
       <div id="questions" class="questions-list mb-4 hidden"></div>
-      <div id="hint-section" class="mb-4">
+
+      <!-- Hint Inputs -->
+      <div id="hint-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
           <input id="hint1" type="text" placeholder="Hint 1">
@@ -259,18 +261,22 @@
           <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
         </div>
       </div>
+
+      <!-- Question-Asking Phase -->
       <div id="question-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
         <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
         <div class="flex flex-col gap-4 bg-gray-100">
-          <select id="group-selector"></select>
-          <input id="question-input" type="text" placeholder="Enter question">
+          <select id="group-selector" class="hidden"></select>
+          <input id="question-input" type="text" placeholder="Enter yes/no question">
           <div class="flex gap-4">
             <button id="answer-yes" class="btn bg-cyan-500">Yes 👍</button>
             <button id="answer-no" class="btn bg-pink-500">No 👎</button>
           </div>
         </div>
       </div>
+
+      <!-- Guess Entry Phase -->
       <div id="guess-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Enter Team Guesses</h2>
         <div class="bg-gray-100">
@@ -287,6 +293,8 @@
           <button id="submit-guesses" class="btn bg-cyan-500 mt-4">Submit All Guesses 🚀</button>
         </div>
       </div>
+
+      <!-- Game State & Scores -->
       <div class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
         <div class="bg-gray-100">
@@ -360,17 +368,20 @@
   </div>
 
   <script>
+    // —— Global Variables —— 
     let groups = [];
     let currentRound = 0;
-    let questions = [];
-    let scores = {};
-    let hintWords = ['', ''];
     let questionCount = 0;
     let currentGroupIndex = 0;
-    let guessStates = {};
-    let swappedPlayers = [];
-    let bonusPoints = {};
-
+    let scores = {};
+    let hintWords = ['', ''];
+    let maxQuestions = 0;
+    let questionsList = [];       // To store asked questions & answers
+    let guessStates = {};         // { teamIndex: { guess: '...', correct: true/false } }
+    let swappedPlayers = [];      // For swap screen
+    let bonusPoints = {};         // { teamIndex: points }
+    
+    // Predefined bonus questions (unchanged from original)
     const bonusQuestions = [
       { q: "What is the name of the main character in 'Spider-Man: Into the Spider-Verse'?", a: "Miles Morales" },
       { q: "Who sings the song 'Bad Guy'?", a: "Billie Eilish" },
@@ -414,10 +425,13 @@
       { q: "In 'The Incredibles,' what is the name of the super-fast son?", a: "Dash" }
     ];
 
+    // Play sound stub (actual audio files are commented out)
     function playSound(soundId) {
+      // For debugging, you can log the sound play. In production, hook to audio elements.
       console.log(`Playing sound: ${soundId}`);
     }
 
+    // —— 1) Dynamically Generate Group Name Inputs —— 
     document.getElementById('num-groups').addEventListener('input', (e) => {
       const num = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
       const groupNamesDiv = document.getElementById('group-names');
@@ -429,5 +443,388 @@
       }
     });
 
+    // —— 2) Start Game: Read Groups, Init Scores, Show Hint Section —— 
     document.getElementById('start-game').addEventListener('click', () => {
-      play
+      // Read number of groups
+      const count = Math.min(Math.max(parseInt(document.getElementById('num-groups').value) || 1, 1), 10);
+      groups = [];
+      scores = {};
+      for (let i = 0; i < count; i++) {
+        const nameInput = document.getElementById(`group-name-${i}`);
+        const teamName = nameInput.value.trim() || `Team ${i + 1}`;
+        groups.push(teamName);
+        scores[teamName] = 0;
+      }
+
+      // Calculate maxQuestions = number of teams (one yes/no question each)
+      maxQuestions = groups.length;
+      questionCount = 0;
+      currentGroupIndex = 0;
+      questionsList = [];
+      guessStates = {};
+      bonusPoints = {};
+
+      // Hide setup, show game & hint section
+      document.getElementById('setup-section').classList.add('hidden');
+      document.getElementById('game-section').classList.remove('hidden');
+      document.getElementById('hint-section').classList.remove('hidden');
+
+      // Display initial game state
+      document.getElementById('current-round').textContent = `Round: ${currentRound + 1}`;
+      document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
+      renderScoreBoard();
+    });
+
+    // —— 3) After Hints Are Set: Show Question-Asking Phase —— 
+    document.getElementById('set-hints').addEventListener('click', () => {
+      const h1 = document.getElementById('hint1').value.trim();
+      const h2 = document.getElementById('hint2').value.trim();
+      hintWords = [h1, h2];
+
+      // Display hints in the hints-display area
+      const hintsDiv = document.getElementById('hints-display');
+      hintsDiv.textContent = `Hints: ${h1} … ${h2}`;
+      hintsDiv.classList.remove('hidden');
+
+      // Hide hint inputs, show question UI
+      document.getElementById('hint-section').classList.add('hidden');
+      document.getElementById('question-section').classList.remove('hidden');
+
+      // Initialize question phase
+      questionCount = 0;
+      currentGroupIndex = 0;
+      updateCurrentTeamDisplay();
+      document.getElementById('question-input').disabled = false;
+      document.getElementById('answer-yes').disabled = false;
+      document.getElementById('answer-no').disabled = false;
+    });
+
+    // —— 4) Yes / No Answer Handlers —— 
+    document.getElementById('answer-yes').addEventListener('click', () => {
+      handleYesNoAnswer('Yes');
+    });
+    document.getElementById('answer-no').addEventListener('click', () => {
+      handleYesNoAnswer('No');
+    });
+
+    function handleYesNoAnswer(answer) {
+      const teamName = groups[currentGroupIndex];
+      const questionText = document.getElementById('question-input').value.trim() || '(no question text entered)';
+      // Store the asked question and the answer
+      questionsList.push({ team: teamName, q: questionText, a: answer });
+      questionCount++;
+      document.getElementById('question-count').textContent = `Questions Asked: ${questionCount} / ${maxQuestions}`;
+
+      // Optionally, you could append this to the questions-list div to show history
+      const qDiv = document.getElementById('questions');
+      qDiv.classList.remove('hidden');
+      const newEntry = document.createElement('div');
+      newEntry.innerHTML = `<strong>${teamName}:</strong> "${questionText}" → <em>${answer}</em>`;
+      qDiv.appendChild(newEntry);
+
+      // Disable this team's question input & buttons
+      document.getElementById('question-input').value = '';
+      document.getElementById('question-input').disabled = true;
+      document.getElementById('answer-yes').disabled = true;
+      document.getElementById('answer-no').disabled = true;
+
+      // If more questions remain, move to next team
+      if (questionCount < maxQuestions) {
+        setTimeout(() => {
+          currentGroupIndex++;
+          updateCurrentTeamDisplay();
+          document.getElementById('question-input').disabled = false;
+          document.getElementById('answer-yes').disabled = false;
+          document.getElementById('answer-no').disabled = false;
+        }, 300);
+      } else {
+        // All teams have asked exactly one question → go to Guess phase
+        setTimeout(() => {
+          showGuessSection();
+        }, 300);
+      }
+    }
+
+    function updateCurrentTeamDisplay() {
+      const teamName = groups[currentGroupIndex];
+      document.getElementById('current-team').textContent = teamName;
+    }
+
+    // —— 5) Show Guess Entry Section —— 
+    function showGuessSection() {
+      document.getElementById('question-section').classList.add('hidden');
+      document.getElementById('guess-section').classList.remove('hidden');
+      renderGuessTable();
+    }
+
+    function renderGuessTable() {
+      const tbody = document.getElementById('guess-table-body');
+      tbody.innerHTML = '';
+      groups.forEach((teamName, idx) => {
+        const tr = document.createElement('tr');
+        // Team name cell
+        const tdTeam = document.createElement('td');
+        tdTeam.textContent = teamName;
+        tdTeam.classList.add('text-gray-700');
+        tr.appendChild(tdTeam);
+
+        // Guess input cell
+        const tdGuess = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Enter your guess';
+        input.dataset.teamIndex = idx;
+        tdGuess.appendChild(input);
+        tr.appendChild(tdGuess);
+
+        // Status cell (to be filled in on submission)
+        const tdStatus = document.createElement('td');
+        tdStatus.textContent = '';
+        tdStatus.dataset.statusFor = idx;
+        tr.appendChild(tdStatus);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // —— 6) Submit All Guesses —— 
+    document.getElementById('submit-guesses').addEventListener('click', () => {
+      // In this implementation, we do not have an "actual answer" field.
+      // If you wish to automatically check correctness, add an <input id="correct-answer"> in setup
+      // and compare each team’s guess. Otherwise, leave the “Correct/Incorrect” column blank
+      // or manually fill it in later.
+
+      const inputs = document.querySelectorAll('#guess-table-body input');
+      inputs.forEach((inp) => {
+        const idx = parseInt(inp.dataset.teamIndex, 10);
+        const guessText = inp.value.trim();
+        guessStates[idx] = { guess: guessText, correct: null };
+        // If you implement auto-check:
+        // const actual = document.getElementById('correct-answer').value.trim().toLowerCase();
+        // guessStates[idx].correct = (guessText.toLowerCase() === actual);
+      });
+
+      // After collecting guesses, show the Score Screen
+      showScoreScreen();
+    });
+
+    // —— 7) Render Score Board (Game State) —— 
+    function renderScoreBoard() {
+      const scoresDiv = document.getElementById('scores');
+      scoresDiv.innerHTML = '';
+      groups.forEach((teamName, idx) => {
+        const card = document.createElement('div');
+        card.classList.add('score-card');
+        card.style.setProperty('--index', idx);
+        const pts = scores[teamName] + (bonusPoints[idx] || 0);
+        card.innerHTML = `
+          <div class="text-lg font-bold">${teamName}</div>
+          <div>Points: ${pts}</div>
+        `;
+        scoresDiv.appendChild(card);
+      });
+    }
+
+    // —— 8) Show Score Screen —— 
+    function showScoreScreen() {
+      document.getElementById('guess-section').classList.add('hidden');
+      const scoreCardsDiv = document.getElementById('score-cards');
+      scoreCardsDiv.innerHTML = '';
+
+      groups.forEach((teamName, idx) => {
+        const card = document.createElement('div');
+        card.classList.add('score-card-animated');
+        card.style.setProperty('--index', idx);
+
+        const gs = guessStates[idx];
+        let statusText = '';
+        if (gs) {
+          statusText = gs.correct === true
+            ? '✅ Correct'
+            : gs.correct === false
+              ? '❌ Incorrect'
+              : '—'; 
+        }
+
+        card.innerHTML = `
+          <div class="text-xl font-bold">${teamName}</div>
+          <div>Guess: ${gs ? gs.guess : '(no guess)'}</div>
+          <div>Status: ${statusText}</div>
+        `;
+        scoreCardsDiv.appendChild(card);
+
+        // Animate each card in
+        setTimeout(() => {
+          card.classList.add('show');
+        }, idx * 150);
+      });
+
+      document.getElementById('score-screen').classList.remove('hidden');
+      // Show "Continue" after all cards have animated in (approx. groups.length * 150 + 500 ms)
+      setTimeout(() => {
+        document.getElementById('continue-game').classList.remove('hidden');
+      }, groups.length * 150 + 500);
+    }
+
+    // —— 9) Continue After Score Screen —— 
+    document.getElementById('continue-game').addEventListener('click', () => {
+      document.getElementById('score-screen').classList.add('hidden');
+      // Check for ties or proceed to next round or end
+      const maxPts = Math.max(...groups.map((t, i) => scores[t] + (bonusPoints[i] || 0)));
+      const leaders = groups.filter((t, i) => (scores[t] + (bonusPoints[i] || 0)) === maxPts);
+
+      if (leaders.length > 1) {
+        // Tiebreaker
+        showTiebreaker(leaders);
+      } else {
+        // Celebrate winner
+        showCelebration(leaders[0]);
+      }
+    });
+
+    // —— 10) Tiebreaker Screen —— 
+    function showTiebreaker(tiedTeams) {
+      const tbDiv = document.getElementById('tiebreaker-screen');
+      tbDiv.classList.remove('hidden');
+      document.getElementById('tied-teams').textContent = `Tied: ${tiedTeams.join(', ')}`;
+      const btnContainer = document.getElementById('tiebreaker-buttons');
+      btnContainer.innerHTML = '';
+      tiedTeams.forEach((name) => {
+        const btn = document.createElement('button');
+        btn.classList.add('btn', 'bg-lime-500');
+        btn.textContent = name;
+        btn.addEventListener('click', () => {
+          document.getElementById('tiebreaker-screen').classList.add('hidden');
+          showCelebration(name);
+        });
+        btnContainer.appendChild(btn);
+      });
+    }
+
+    // —— 11) Celebration Screen —— 
+    function showCelebration(winnerName) {
+      document.getElementById('winner-name').textContent = winnerName;
+      document.getElementById('celebration-screen').classList.remove('hidden');
+      // Launch confetti animation
+      launchConfetti('confetti-canvas');
+    }
+
+    document.getElementById('new-game-from-celebration').addEventListener('click', () => {
+      document.getElementById('celebration-screen').classList.add('hidden');
+      resetGame();
+    });
+
+    // —— 12) Swap Screen (Optional Surprise) —— 
+    // If your original code has a swap feature, hook it here. For now, it’s not invoked automatically.
+    document.getElementById('confirm-swap').addEventListener('click', () => {
+      const targetIdx = parseInt(document.getElementById('swap-target').value, 10);
+      const swapTeam = swappedPlayers.shift();
+      // Swap points or any other attribute between swapTeam and targetIdx
+      // ... (your original swap logic)
+      document.getElementById('swap-screen').classList.add('hidden');
+      renderScoreBoard();
+    });
+
+    // —— 13) Bonus Screen —— 
+    // Show a bonus question if you wish.  
+    document.getElementById('bonus-yes').addEventListener('click', () => {
+      const teamIdx = parseInt(document.getElementById('bonus-team').value, 10);
+      bonusPoints[teamIdx] = (bonusPoints[teamIdx] || 0) + 1;
+      document.getElementById('bonus-screen').classList.add('hidden');
+      renderScoreBoard();
+    });
+    document.getElementById('bonus-no').addEventListener('click', () => {
+      document.getElementById('bonus-screen').classList.add('hidden');
+      renderScoreBoard();
+    });
+
+    // —— 14) End Game Early —— 
+    document.getElementById('end-game').addEventListener('click', () => {
+      // Show final scores and “Game Over”
+      const finalDiv = document.getElementById('end-game-section');
+      const text = groups.map((t, i) => {
+        const pts = scores[t] + (bonusPoints[i] || 0);
+        return `${t}: ${pts} pts`;
+      }).join(' | ');
+      document.getElementById('final-scores').textContent = text;
+      document.getElementById('end-game-section').classList.remove('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+    });
+
+    document.getElementById('new-game').addEventListener('click', () => {
+      document.getElementById('end-game-section').classList.add('hidden');
+      resetGame();
+    });
+
+    // —— 15) Reset Game —— 
+    function resetGame() {
+      // Reset all global variables
+      groups = [];
+      currentRound = 0;
+      questionCount = 0;
+      currentGroupIndex = 0;
+      scores = {};
+      hintWords = ['', ''];
+      maxQuestions = 0;
+      questionsList = [];
+      guessStates = {};
+      swappedPlayers = [];
+      bonusPoints = {};
+
+      // Clear UI Sections
+      document.getElementById('setup-section').classList.remove('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('score-screen').classList.add('hidden');
+      document.getElementById('tiebreaker-screen').classList.add('hidden');
+      document.getElementById('celebration-screen').classList.add('hidden');
+      document.getElementById('swap-screen').classList.add('hidden');
+      document.getElementById('bonus-screen').classList.add('hidden');
+      document.getElementById('end-game-section').classList.add('hidden');
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('questions').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      document.getElementById('group-names').innerHTML = '';
+      document.getElementById('num-groups').value = 1;
+      document.getElementById('scores').innerHTML = '';
+      document.getElementById('question-count').textContent = '';
+      document.getElementById('current-round').textContent = '';
+    }
+
+    // —— 16) Confetti Launch (Canvas Animation Stub) —— 
+    function launchConfetti(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      // Simple confetti loop (placeholder)
+      let particles = [];
+      const colors = ['#f44336','#e91e63','#9c27b0','#2196f3','#4caf50','#ffeb3b','#ff9800'];
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height * -1,
+          r: Math.random() * 4 + 2,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          fallSpeed: Math.random() * 3 + 2
+        });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, p.r, p.r * 0.6, Math.random() * Math.PI, 0, 2 * Math.PI);
+          ctx.fill();
+          p.y += p.fallSpeed;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      draw();
+    }
+  </script>
+</body>
+</html>
