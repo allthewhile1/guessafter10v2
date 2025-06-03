@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess in Ten Scorekeeper</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #60a5fa, #34d399);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      padding: 32px;
+      max-width: 896px;
+      margin: 0 auto;
+    }
+    h1, h2, h3 {
+      color: #4f46e5;
+      text-align: center;
+    }
+    h1 { font-size: 36px; }
+    h2 { font-size: 28px; }
+    h3 { font-size: 24px; }
+    .btn {
+      background: #06b6d4;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.2s, background 0.3s;
+      display: inline-block;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+      background: #0891b2;
+    }
+    .section {
+      animation: fadeIn 0.5s ease-in;
+      margin-bottom: 32px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .score-card {
+      border-left: 4px solid;
+      border-color: hsl(calc(30 * var(--index)), 70%, 50%);
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      margin: 8px 0;
+    }
+    .questions-list {
+      background: #5eead4;
+      border-radius: 8px;
+      padding: 24px;
+      font-size: 20px;
+      line-height: 28px;
+    }
+    .hints-display {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #0d9488;
+      text-align: center;
+    }
+    .guess-table th, .guess-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .guess-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .guess-btn-selected {
+      border: 4px solid #1f2937;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: scale(1.05);
+      font-weight: bold;
+    }
+    .score-screen, .tiebreaker-screen, .celebration-screen, .swap-screen, .bonus-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .score-card-animated, .tiebreaker-card, .celebration-card, .swap-card, .bonus-card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .score-card-animated {
+      border: 4px solid;
+      border-color: hsl(calc(30 * var(--index)), 70%, 50%);
+      opacity: 0;
+      transform: translateY(100px);
+      width: 256px;
+    }
+    .score-card-animated.show {
+      animation: jiggle 0.5s ease-in-out, slideIn 0.5s ease-in-out;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .celebration-card, .swap-card, .bonus-card {
+      border: 4px solid #0d9488;
+      width: 320px;
+    }
+    .celebration-card.show, .swap-card.show, .bonus-card.show {
+      animation: celebrate 1s ease-in-out 2;
+    }
+    .tiebreaker-card {
+      width: 320px;
+    }
+    @keyframes jiggle {
+      0% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(0) rotate(5deg); }
+      50% { transform: translateY(0) rotate(-5deg); }
+      75% { transform: translateY(0) rotate(5deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(100px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    #confetti-canvas, #swap-confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 11;
+    }
+    #score-cards {
+      max-height: 80vh;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    .spinning-wheel {
+      display: inline-block;
+      animation: spin 2s ease-out;
+    }
+    .bonus-question {
+      background: #5eead4;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .timer {
+      background: #fdf4e3;
+      border: 2px solid #8b4513;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 18px;
+      color: #db2777;
+      font-weight: bold;
+    }
+    input, select {
+      padding: 12px;
+      border: 2px solid #2dd4bf;
+      border-radius: 8px;
+      font-size: 18px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+    }
+    .bg-gray-100 {
+      background: #f3f4f6;
+      padding: 24px;
+      border-radius: 8px;
+    }
+    .text-teal-600 { color: #0d9488; }
+    .text-pink-600 { color: #db2777; }
+    .text-lime-600 { color: #65a30d; }
+    .text-gray-700 { color: #374151; }
+    .bg-cyan-500 { background: #06b6d4; }
+    .bg-lime-500 { background: #84cc16; }
+    .bg-lime-400 { background: #a3e635; }
+    .bg-pink-500 { background: #ec4899; }
+    .bg-pink-400 { background: #f472b6; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .gap-4 { gap: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-6 { margin-bottom: 24px; }
+    .mt-4 { margin-top: 16px; }
+    .text-lg { font-size: 18px; }
+    .text-xl { font-size: 20px; }
+    .text-2xl { font-size: 24px; }
+    .text-4xl { font-size: 36px; }
+    .font-bold { font-weight: bold; }
+    .text-center { text-align: center; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Audio Elements (Commented Out for Offline Use) -->
+  <!-- <audio id="click-sound" src="sounds/click.wav"></audio> -->
+  <!-- <audio id="correct-sound" src="sounds/correct.wav"></audio> -->
+  <!-- <audio id="incorrect-sound" src="sounds/incorrect.wav"></audio> -->
+
+  <div class="container section">
+    <h1 class="text-4xl font-bold text-center mb-4">Guess in Ten Scorekeeper 🧠</h1>
+    <div id="hints-display" class="hints-display mb-4 hidden"></div>
+
+    <!-- Setup Section -->
+    <div id="setup-section" class="mb-4">
+      <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
+      <div class="flex flex-col gap-4 bg-gray-100">
+        <div>
+          <label class="block text-lg font-bold text-gray-700">Number of Groups (1-10):</label>
+          <input id="num-groups" type="number" min="1" max="10" value="1">
+        </div>
+        <div id="group-names" class="grid grid-cols-1 gap-4"></div>
+        <button id="start-game" class="btn bg-cyan-500">Start Game 🚀</button>
+      </div>
+    </div>
+
+    <!-- Game Section -->
+    <div id="game-section" class="hidden">
+      <div id="questions-list" class="questions-list mb-4 hidden"></div>
+      <div id="hint-section" class="mb-4">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
+        <div class="flex flex-col gap-4 bg-gray-100">
+          <input id="hint1" type="text" placeholder="Hint Word 1">
+          <input id="hint2" type="text" placeholder="Hint Word 2">
+          <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
+        </div>
+      </div>
+      <div id="question-section" class="mb-4 hidden">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
+        <p id="current-team" class="text-4xl text-pink-600 font-bold mb-6 text-center"></p>
+        <div class="flex flex-col gap-4 bg-gray-100">
+          <select id="group-selector"></select>
+          <input id="input" type="text" placeholder="Enter question">
+          <div class="flex gap-4">
+            <button id="answer-yes" class="btn bg-cyan-500">Yes 👍</button>
+            <button id="answer-no" class="btn bg-pink-500">No 👎</button>
+          </div>
+        </div>
+      <div id="guess-section" class="mb-4">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4">Enter Team Guesses</h2>
+        <div class="bg-gray-100">
+          <table class="guess-table">
+            <thead>
+              <tr>
+                <th class="text-lg text-gray-700">Team</th>
+                <th class="text-lg text-gray-700">Guess</th>
+                <th class="text-lg text-gray-700">Correct/Incorrect</th>
+              </tr>
+            </thead>
+            <tbody id="guess-table-body"></tbody>
+          </table>
+          <button id="submit-guesses" class="btn bg-cyan-500 mt-4">Submit All Guesses 🚀</button>
+        </div>
+      </div>
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
+        <div class="bg-gray-100">
+          <p id="current-round" class="text-lg text-gray-700 mb-2"></p>
+          <p id="question-count" class="text-lg text-gray-700 mb-2"></p>
+          <div id="scores-display" class="grid grid-cols-1 gap-2"></div>
+        </div>
+      <!-- End Game -->
+      <button id="end-game-btn" class="btn bg-pink-500">End Game 🛑</button>
+    </div>
+
+    <!-- Score Screen -->
+    <div id="score-screen" class="score-screen hidden">
+      <div id="score-cards"></div>
+      <button id="continue-btn" class="btn bg-cyan-500 mt-4 hidden">Continue 🚀</button>
+    </div>
+
+    <!-- Swap Screen -->
+    <div id="swap-screen" class="swap-screen hidden">
+      <canvas id="swap-confetti-canvas"></canvas>
+      <div class="swap-card">
+        <h3 class="text-2xl font-bold text-teal-600 mb-2">Swap Surprise! 🎉</h3>
+        <p id="swap-team" class="text-xl text-center-700 mb-2"></p>
+        <select id="swap-target" class="w-full"></select>
+        <button id="confirm-swap-btn" class="btn bg-cyan-500">Confirm Swap ✅</button>
+      </div>
+    </div>
+
+    <!-- Bonus Screen -->
+    <div id="bonus-screen" class="bonus-screen hidden">
+      <div class="bonus-card">
+        <h3 class="text-2xl font-bold text-teal-600 mb-4">Bonus Blitz! ⚡</h3>
+        <div id="bonus-question" class="bonus-question text-xl mb-4"></div>
+        <div id="bonus-timer" class="timer-bonus mb-4"></div>
+        <select id="bonus-winner" class="w-full"></select>
+        <button id="award-bonus-btn" class="btn bg-cyan-500">Award Point 🔥</button>
+      </div>
+    <!-- Tiebreaker Screen -->
+    <div id="tiebreaker-screen" class="tiebreaker-screen hidden">
+      <div class="tiebreaker-card">
+        <h3 class="text-3xl font-bold text-teal-600 mb-2">Tiebreaker!</h3>
+        <p id="tied-text" class="teams-xl text-gray-700 mb-4"></p>
+        <div class="flex flex-col gap-4" id="tiebreaker-buttons"></div>
+        </div>
+
+      </div>
+
+    <!-- Celebration Screen -->
+    <div id="celebration-screen" class="celebration-screen hidden">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="celebration-card">
+        <h3 class="text-4xl font-bold text-center-600 mb-4" id="winner-text"></h3>
+        <p class="text-2xl text-gray-700">Winner! 🏆</p>
+      </div>
+      <button id="new-game-btn-celebration" class="btn bg-cyan-500 mt-4">Start New Game 🚀</button>
+      </div>
+
+    <!-- End Game Section -->
+    <div id="end-game-section" class="hidden">
+      <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Over 🎉</h2>
+      <div class="bg-gray-100">
+        <p id="final-scores-text" class="text-lg text-gray-700 mb-4"></p>
+        <button id="new-game-btn" class="btn bg-cyan-500">Start New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let groups = [];
+    let currentRound = 0;
+    let questions = [];
+    let scores = {};
+    let hintWords = ['', ''];
+    let questionCount = 0;
+    let currentGroupIndex = 0;
+    let guessStates = {};
+    let swappedPlayers = [];
+    let bonusPoints = {};
+
+    const bonusQuestions = [
+      { q: "What is the name of the main character in 'Spider-Man: Into the Spider-Verse'?", a: "Miles Morales" },
+      { q: "Who sings the song 'Bad Guy'?", a: "Billie Eilish" },
+      { q: "What is the name of the battle royale game with a storm circle?", a: "Fortnite" },
+      { q: "In 'The Mandalorian,' what is Baby Yoda’s real name?", a: "Grogu" },
+      { q: "What is the name of the fictional school in 'Harry Potter'?", a: "Hogwarts" },
+      { q: "Who is the YouTuber known for playing 'Minecraft' and having a blue diamond logo?", a: "DanTDM" },
+      { q: "In 'Avengers: Endgame,' what is the name of Iron Man’s daughter?", a: "Morgan Stark" },
+      { q: "What is the name of the princess in 'The Legend of Zelda' series?", a: "Zelda" },
+      { q: "Who sings 'Shake It Off'?", a: "Taylor Swift" },
+      { q: "In 'Frozen,' what is Elsa’s sister’s name?", a: "Anna" },
+      { q: "What is the name of the blocky sandbox game where you punch trees to gather wood?", a: "Minecraft" },
+      { q: "Who is the main villain in 'Star Wars: The Force Awakens'?", a: "Kylo Ren" },
+      { q: "What is the name of the streaming platform where MrBeast posts challenge videos?", a: "YouTube" },
+      { q: "In 'Toy Story,' what is the name of the cowboy doll?", a: "Woody" },
+      { q: "Who plays Captain Marvel in the Marvel movies?", a: "Brie Larson" },
+      { q: "What is the name of the purple villain in 'Avengers: Infinity War'?", a: "Thanos" },
+      { q: "In 'Among Us,' what do players do when a body is reported?", a: "Discuss/Vote" },
+      { q: "Who is the singer of 'Old Town Road'?", a: "Lil Nas X" },
+      { q: "What is the name of the fictional city where Batman lives?", a: "Gotham City" },
+      { q: "In 'The Hunger Games,' what is the main character’s name?", a: "Katniss Everdeen" },
+      { q: "What is the name of the dance move popularized by Fortnite?", a: "Floss" },
+      { q: "Who is the YouTuber known for 'Unspeakable' gaming and challenge videos?", a: "Unspeakable" },
+      { q: "In 'Moana,' what is the name of the demigod who helps Moana?", a: "Maui" },
+      { q: "What is the name of the boy band that sang 'Dynamite'?", a: "BTS" },
+      { q: "In 'Pokémon,' what is the name of the electric mouse Pokémon?", a: "Pikachu" },
+      { q: "Who plays Spider-Man in 'Spider-Man: No Way Home'?", a: "Tom Holland" },
+      { q: "What is the name of the game where you build and survive with friends on servers?", a: "Roblox" },
+      { q: "In 'Encanto,' what is the main family’s last name?", a: "Madrigal" },
+      { q: "Who sings 'Happier Than Ever'?", a: "Billie Eilish" },
+      { q: "What is the name of the green ogre in the movie 'Shrek'?", a: "Shrek" },
+      { q: "In 'Stranger Things,' what is the name of the alternate dimension?", a: "Upside Down" },
+      { q: "Who is the YouTuber known for 'Dream' and speedrunning Minecraft?", a: "Dream" },
+      { q: "In 'Black Panther,' what is the name of the fictional African country?", a: "Wakanda" },
+      { q: "What is the name of the singer who performed at the 2020 Super Bowl with Shakira?", a: "Jennifer Lopez" },
+      { q: "In 'Coco,' what instrument does Miguel play?", a: "Guitar" },
+      { q: "What is the name of the game where you collect cards and battle with creatures?", a: "Pokémon Trading Card Game" },
+      { q: "Who plays Harley Quinn in 'Birds of Prey'?", a: "Margot Robbie" },
+      { q: "In 'Soul,' what is the name of the main character who loves jazz?", a: "Joe Gardner" },
+      { q: "What is the name of the K-pop girl group that sang 'How You Like That'?", a: "Blackpink" },
+      { q: "In 'The Incredibles,' what is the name of the super-fast son?", a: "Dash" }
+    ];
+
+    function playSound(soundId) {
+      // const sound = document.getElementById(soundId);
+      // sound.currentTime = 0;
+      // sound.play().catch(() => {});
+      console.log(`Playing sound: ${soundId}`); // Placeholder for offline
+    }
+
+    document.getElementById('num-groups').addEventListener('input', (e) => {
+      const num = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
+      const groupNamesDiv = document.getElementById('group-names');
+      groupNamesDiv.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        groupNamesDiv.innerHTML += `
+          <input id="group-name-${i}" type="text" placeholder="Group ${i + 1} Name">
+        `;
+      }
+    });
+
+    document.getElementById('start-game').addEventListener('click', () => {
+      playSound('click-sound');
+      groups = [];
+      scores = {};
+      guessStates = {};
+      swappedPlayers = [];
+      bonusPoints = {};
+      const numGroups = Math.min(Math.max(parseInt(document.getElementById('num-groups').value) || 1, 1), 10);
+      for (let i = 0; i < numGroups; i++) {
+        const name = document.getElementById(`group-name-${i}`)?.value || `Group ${i + 1}`;
+        groups.push(name);
+        scores[name] = 0;
+        bonusPoints[name] = 0;
+      }
+      currentRound = 1;
+      questions = [];
+      questionCount = 0;
+      currentGroupIndex = 0;
+      hintWords = ['', ''];
+      document.getElementById('hint-section').classList.remove('hidden');
+      document.getElementById('questions-list').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      updateGameState();
+      document.getElementById('setup-section').classList.add('hidden');
+      document.getElementById('game-section').classList.remove('hidden');
+      updateGroupSelectors();
+    });
+
+    document.getElementById('set-hints').addEventListener('click', () => {
+      playSound('click-sound');
+      hintWords = [
+        document.getElementById('hint1').value.trim(),
+        document.getElementById('hint2').value.trim()
+      ];
+      document.getElementById('hint-section').classList.add('hidden');
+      document.getElementById('question-section').classList.remove('hidden');
+      document.getElementById('questions-list').classList.remove('hidden');
+      document.getElementById('hints-display').classList.remove('hidden');
+      updateGroupSelectors();
+      updateGameState();
+    });
+
+    function recordQuestion(answer) {
+      playSound('click-sound');
+      const group = document.getElementById('group-selector').value;
+      const question = document.getElementById('question-input').value.trim();
+      if (question) {
+        questions.push({ group, question, answer });
+        questionCount++;
+        document.getElementById('question-input').value = '';
+        currentGroupIndex = (currentGroupIndex + 1) % groups.length;
+        if (questionCount >= 10) {
+          document.getElementById('question-section').classList.add('hidden');
+          document.getElementById('guess-section').classList.remove('hidden');
+          initializeGuessTable();
+        }
+        updateGroupSelectors();
+        updateGameState();
+      }
+    }
+
+    document.getElementById('answer-yes').addEventListener('click', () => recordQuestion('Yes'));
+    document.getElementById('answer-no').addEventListener('click', () => recordQuestion('No'));
+
+    function initializeGuessTable() {
+      guessStates = {};
+      const tableBody = document.getElementById('guess-table-body');
+      tableBody.innerHTML = '';
+      groups.forEach(group => {
+        guessStates[group] = { guess: '', correct: null };
+        tableBody.innerHTML += `
+          <tr id="guess-row-${group}">
+            <td class="text-lg">${group}</td>
+            <td><input id="guess-input-${group}" type="text" placeholder="Enter guess"></td>
+            <td>
+              <button id="guess-correct-${group}" class="btn bg-lime-500">Correct ✅</button>
+              <button id="guess-incorrect-${group}" class="btn bg-pink-500">Incorrect ❌</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      groups.forEach(group => {
+        document.getElementById(`guess-input-${group}`).addEventListener('input', (e) => {
+          guessStates[group].guess = e.target.value.trim();
+        });
+        document.getElementById(`guess-correct-${group}`).addEventListener('click', () => {
+          playSound('correct-sound');
+          guessStates[group].correct = true;
+          updateButtonStyles(group);
+        });
+        document.getElementById(`guess-incorrect-${group}`).addEventListener('click', () => {
+          playSound('incorrect-sound');
+          guessStates[group].correct = false;
+          updateButtonStyles(group);
+        });
+      });
+    }
+
+    function updateButtonStyles(group) {
+      const correctBtn = document.getElementById(`guess-correct-${group}`);
+      const incorrectBtn = document.getElementById(`guess-incorrect-${group}`);
+      if (guessStates[group].correct === true) {
+        correctBtn.classList.add('guess-btn-selected', 'bg-lime-400');
+        correctBtn.classList.remove('bg-lime-500');
+        incorrectBtn.classList.remove('guess-btn-selected', 'bg-pink-400');
+        incorrectBtn.classList.add('bg-pink-500');
+      } else if (guessStates[group].correct === false) {
+        incorrectBtn.classList.add('guess-btn-selected', 'bg-pink-400');
+        incorrectBtn.classList.remove('bg-pink-500');
+        correctBtn.classList.remove('guess-btn-selected', 'bg-lime-400');
+        correctBtn.classList.add('bg-lime-500');
+      }
+    }
+
+    function showScoreScreen() {
+      const scoreScreen = document.getElementById('score-screen');
+      const scoreCards = document.getElementById('score-cards');
+      scoreCards.innerHTML = '';
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('questions-list').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      scoreScreen.classList.remove('hidden');
+
+      const sortedTeams = Object.entries(scores).map(([group, score], index) => ({
+        group,
+        score,
+        index
+      })).sort((a, b) => {
+        if (a.score === b.score) {
+          return a.group.localeCompare(b.group);
+        }
+        return a.score - b.score;
+      });
+
+      sortedTeams.reverse().forEach((team, i) => {
+        const card = document.createElement('div');
+        card.className = 'score-card-animated';
+        card.style.setProperty('--index', team.index);
+        card.innerHTML = `
+          <h3 class="text-2xl font-bold text-teal-600">${team.group}</h3>
+          <p class="text-xl text-gray-700">Score: ${team.score}${bonusPoints[team.group] > 0 ? ` (+${bonusPoints[team.group]} bonus)` : ''}</p>
+        `;
+        scoreCards.appendChild(card);
+        setTimeout(() => {
+          card.classList.add('show');
+        }, i * 1000);
+      });
+
+      setTimeout(() => {
+        document.getElementById('continue-btn').classList.remove('hidden');
+      }, sortedTeams.length * 1000);
+    }
+
+    function showSwapScreen() {
+      const scoringTeams = groups.filter(g => questions.some(q => q.group === g && q.correct));
+      if (!scoringTeams.length) return startNextRound();
+      const swapTeam = scoringTeams[Math.floor(Math.random() * scoringTeams.length)];
+      document.getElementById('swap-team').textContent = `${swapTeam} gets to steal a player!`;
+      const swapTarget = document.getElementById('swap-target');
+      swapTarget.innerHTML = groups
+        .filter(g => g !== swapTeam && !swappedPlayers.some(s => s.from === g))
+        .map(g => `<option value="${g}">${g}</option>`)
+        .join('');
+      if (!swapTarget.innerHTML) return startNextRound();
+
+      const canvas = document.getElementById('swap-confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+      for (let i = 0; i < 50; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          size: Math.random() * 8 + 4,
+          speed: Math.random() * 4 + 1,
+          color
