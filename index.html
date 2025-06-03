@@ -50,20 +50,13 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .score-card {
-      border-left: 4px solid;
-      border-color: hsl(calc(30 * var(--index)), 70%, 50%);
-      padding: 12px;
-      background: white;
-      border-radius: 8px;
-      margin: 8px 0;
-    }
     .questions-list {
       background: #5eead4;
       border-radius: 8px;
       padding: 24px;
       font-size: 20px;
       line-height: 28px;
+      margin-bottom: 24px;
     }
     .hints-display {
       background: white;
@@ -73,6 +66,7 @@
       font-weight: bold;
       color: #0d9488;
       text-align: center;
+      margin-bottom: 24px;
     }
     .guess-table th, .guess-table td {
       padding: 12px;
@@ -83,117 +77,22 @@
       width: 100%;
       border-collapse: collapse;
     }
-    .guess-btn-selected {
-      border: 4px solid #1f2937;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transform: scale(1.05);
-      font-weight: bold;
-    }
-    .score-screen, .tiebreaker-screen, .celebration-screen, .swap-screen, .bonus-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-    }
-    .score-card-animated, .tiebreaker-card, .celebration-card, .swap-card, .bonus-card {
+    .score-card {
+      border-left: 4px solid;
+      border-color: hsl(calc(30 * var(--index)), 70%, 50%);
+      padding: 12px;
       background: white;
       border-radius: 8px;
-      padding: 24px;
-      margin: 8px;
-      text-align: center;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      margin: 8px 0;
     }
-    .score-card-animated {
-      border: 4px solid;
-      border-color: hsl(calc(30 * var(--index)), 70%, 50%);
-      opacity: 0;
-      transform: translateY(100px);
-      width: 256px;
-    }
-    .score-card-animated.show {
-      animation: jiggle 0.5s ease-in-out, slideIn 0.5s ease-in-out;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .celebration-card, .swap-card, .bonus-card {
-      border: 4px solid #0d9488;
-      width: 320px;
-    }
-    .celebration-card.show, .swap-card.show, .bonus-card.show {
-      animation: celebrate 1s ease-in-out 2;
-    }
-    .tiebreaker-card {
-      width: 320px;
-    }
-    @keyframes jiggle {
-      0% { transform: translateY(0) rotate(0deg); }
-      25% { transform: translateY(0) rotate(5deg); }
-      50% { transform: translateY(0) rotate(-5deg); }
-      75% { transform: translateY(0) rotate(5deg); }
-      100% { transform: translateY(0) rotate(0deg); }
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(100px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes celebrate {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    #confetti-canvas, #swap-confetti-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 11;
-    }
-    #score-cards {
-      max-height: 80vh;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
-      gap: 16px;
-      padding: 16px;
-    }
-    .spinning-wheel {
-      display: inline-block;
-      animation: spin 2s ease-out;
-    }
-    .bonus-question {
-      background: #5eead4;
-      border-radius: 8px;
-      padding: 16px;
-    }
-    .timer {
-      background: #fdf4e3;
-      border: 2px solid #8b4513;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 18px;
-      color: #db2777;
-      font-weight: bold;
-    }
-    input, select {
+    .mark-table th, .mark-table td {
       padding: 12px;
-      border: 2px solid #2dd4bf;
-      border-radius: 8px;
-      font-size: 18px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .mark-table {
       width: 100%;
-      box-sizing: border-box;
+      border-collapse: collapse;
       margin-bottom: 16px;
     }
     .bg-gray-100 {
@@ -207,15 +106,14 @@
     .text-gray-700 { color: #374151; }
     .bg-cyan-500 { background: #06b6d4; }
     .bg-lime-500 { background: #84cc16; }
-    .bg-lime-400 { background: #a3e635; }
     .bg-pink-500 { background: #ec4899; }
-    .bg-pink-400 { background: #f472b6; }
     .flex { display: flex; }
     .flex-col { flex-direction: column; }
     .gap-4 { gap: 16px; }
     .mb-4 { margin-bottom: 16px; }
     .mb-6 { margin-bottom: 24px; }
     .mt-4 { margin-top: 16px; }
+    .mr-4 { margin-right: 16px; }
     .text-lg { font-size: 18px; }
     .text-xl { font-size: 20px; }
     .text-2xl { font-size: 24px; }
@@ -226,21 +124,17 @@
   </style>
 </head>
 <body>
-  <!-- Audio Elements (Commented Out for Offline Use) -->
-  <!-- <audio id="click-sound" src="sounds/click.wav"></audio> -->
-  <!-- <audio id="correct-sound" src="sounds/correct.wav"></audio> -->
-  <!-- <audio id="incorrect-sound" src="sounds/incorrect.wav"></audio> -->
-
   <div class="container section">
     <h1 class="text-4xl font-bold text-center mb-6">Guess in Ten Scorekeeper 🧠</h1>
-    <div id="hints-display" class="hints-display mb-4 hidden"></div>
 
-    <!-- Setup Section -->
+    <!-- Game Setup -->
     <div id="setup-section" class="mb-4">
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
       <div class="flex flex-col gap-4 bg-gray-100">
         <div>
-          <label for="num-groups" class="block text-lg font-bold text-gray-700">Number of Groups (1-10):</label>
+          <label for="num-groups" class="block text-lg font-bold text-gray-700">
+            Number of Groups (1–10):
+          </label>
           <input id="num-groups" type="number" min="1" max="10" value="1">
         </div>
         <div id="group-names" class="grid grid-cols-1 gap-4"></div>
@@ -248,11 +142,13 @@
       </div>
     </div>
 
-    <!-- Game Section -->
+    <!-- Main Game Section -->
     <div id="game-section" class="hidden">
-      <div id="questions" class="questions-list mb-4 hidden"></div>
 
-      <!-- Hint Inputs -->
+      <!-- Hints Display -->
+      <div id="hints-display" class="hints-display hidden"></div>
+
+      <!-- Hint Input Phase -->
       <div id="hint-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
@@ -262,12 +158,14 @@
         </div>
       </div>
 
+      <!-- Questions History -->
+      <div id="questions" class="questions-list hidden"></div>
+
       <!-- Question-Asking Phase -->
       <div id="question-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
         <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
         <div class="flex flex-col gap-4 bg-gray-100">
-          <select id="group-selector" class="hidden"></select>
           <input id="question-input" type="text" placeholder="Enter yes/no question">
           <div class="flex gap-4">
             <button id="answer-yes" class="btn bg-cyan-500">Yes 👍</button>
@@ -285,7 +183,6 @@
               <tr>
                 <th class="text-lg text-gray-700">Team</th>
                 <th class="text-lg text-gray-700">Guess</th>
-                <th class="text-lg text-gray-700">Correct/Incorrect</th>
               </tr>
             </thead>
             <tbody id="guess-table-body"></tbody>
@@ -294,75 +191,47 @@
         </div>
       </div>
 
-      <!-- Game State & Scores -->
+      <!-- Mark Answers Phase -->
+      <div id="mark-screen" class="mb-4 hidden">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Mark Answers</h2>
+        <div class="bg-gray-100">
+          <table class="mark-table">
+            <thead>
+              <tr>
+                <th class="text-lg text-gray-700">Team</th>
+                <th class="text-lg text-gray-700">Guess</th>
+                <th class="text-lg text-gray-700">Mark</th>
+              </tr>
+            </thead>
+            <tbody id="mark-table-body"></tbody>
+          </table>
+          <button id="finalize-round" class="btn bg-cyan-500 hidden">Finalize Round 🚀</button>
+        </div>
+      </div>
+
+      <!-- Round Controls: Next Round or End Game -->
+      <div id="round-controls" class="mb-4 hidden">
+        <button id="next-round" class="btn bg-lime-500 mr-4">Next Round 🕒</button>
+        <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
+      </div>
+
+      <!-- Game State & Scores (always visible during game) -->
       <div class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
-        <div class="bg-gray-100">
+        <div class="bg-gray-100 p-4 rounded-lg">
           <p id="current-round" class="text-lg text-gray-700 mb-2"></p>
           <p id="question-count" class="text-lg text-gray-700 mb-2"></p>
           <div id="scores" class="grid grid-cols-1 gap-2"></div>
         </div>
       </div>
-      <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
-    </div>
 
-    <!-- Score Screen -->
-    <div id="score-screen" class="score-screen hidden">
-      <div id="score-cards"></div>
-      <button id="continue-game" class="btn bg-cyan-500 mt-4 hidden">Continue 🚀</button>
-    </div>
-
-    <!-- Swap Screen -->
-    <div id="swap-screen" class="swap-screen hidden">
-      <canvas id="swap-confetti-canvas"></canvas>
-      <div class="swap-card">
-        <h3 class="text-2xl font-bold text-teal-600 mb-4">Swap Surprise! 🎉</h3>
-        <p id="swap-team" class="text-xl text-gray-700 mb-4 spinning-wheel"></p>
-        <select id="swap-target" class="w-full"></select>
-        <button id="confirm-swap" class="btn bg-cyan-500">Confirm Swap 🚀</button>
-      </div>
-    </div>
-
-    <!-- Bonus Screen -->
-    <div id="bonus-screen" class="bonus-screen hidden">
-      <div class="bonus-card">
-        <h3 class="text-2xl font-bold text-teal-600 mb-4">Bonus Blitz! ⚡</h3>
-        <div id="bonus-question" class="bonus-question text-xl text-gray-700 mb-4"></div>
-        <div id="bonus-answer" class="text-lg text-lime-600 font-bold mb-4 hidden"></div>
-        <div id="bonus-timer" class="timer text-lg text-pink-600 font-bold mb-4"></div>
-        <select id="bonus-team" class="w-full mb-4"></select>
-        <div id="bonus-decision" class="flex gap-4 hidden">
-          <button id="bonus-yes" class="btn bg-lime-500">Yes ✅</button>
-          <button id="bonus-no" class="btn bg-pink-500">No ❌</button>
+      <!-- End Game Summary -->
+      <div id="end-game-section" class="hidden">
+        <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Over 🎉</h2>
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <p id="final-scores" class="text-lg text-gray-700 mb-4"></p>
+          <button id="restart-game" class="btn bg-cyan-500">Restart Game 🚀</button>
         </div>
-      </div>
-    </div>
-
-    <!-- Tiebreaker Screen -->
-    <div id="tiebreaker-screen" class="tiebreaker-screen hidden">
-      <div class="tiebreaker-card">
-        <h3 class="text-2xl font-bold text-teal-600 mb-4">Tiebreaker!</h3>
-        <p id="tied-teams" class="text-xl text-gray-700 mb-4"></p>
-        <div id="tiebreaker-buttons" class="flex flex-col gap-4"></div>
-      </div>
-    </div>
-
-    <!-- Celebration Screen -->
-    <div id="celebration-screen" class="celebration-screen hidden">
-      <canvas id="confetti-canvas"></canvas>
-      <div class="celebration-card">
-        <h3 id="winner-name" class="text-4xl font-bold text-teal-600 mb-4"></h3>
-        <p class="text-2xl text-gray-700">Winner! 🏆</p>
-      </div>
-      <button id="new-game-from-celebration" class="btn bg-cyan-500 mt-4">Start New Game 🚀</button>
-    </div>
-
-    <!-- End Game Section -->
-    <div id="end-game-section" class="hidden">
-      <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Over 🎉</h2>
-      <div class="bg-gray-100">
-        <p id="final-scores" class="text-lg text-gray-700 mb-4"></p>
-        <button id="new-game" class="btn bg-cyan-500">Start New Game 🚀</button>
       </div>
     </div>
   </div>
@@ -370,68 +239,21 @@
   <script>
     // —— Global Variables —— 
     let groups = [];
-    let currentRound = 0;
+    let currentRound = 1;
     let questionCount = 0;
     let currentGroupIndex = 0;
     let scores = {};
     let hintWords = ['', ''];
     let maxQuestions = 0;
-    let questionsList = [];       // To store asked questions & answers
-    let guessStates = {};         // { teamIndex: { guess: '...', correct: true/false } }
-    let swappedPlayers = [];      // For swap screen
-    let bonusPoints = {};         // { teamIndex: points }
-    
-    // Predefined bonus questions (unchanged from original)
-    const bonusQuestions = [
-      { q: "What is the name of the main character in 'Spider-Man: Into the Spider-Verse'?", a: "Miles Morales" },
-      { q: "Who sings the song 'Bad Guy'?", a: "Billie Eilish" },
-      { q: "What is the name of the battle royale game with a storm circle?", a: "Fortnite" },
-      { q: "In 'The Mandalorian,' what is Baby Yoda’s real name?", a: "Grogu" },
-      { q: "What is the name of the fictional school in 'Harry Potter'?", a: "Hogwarts" },
-      { q: "Who is the YouTuber known for playing 'Minecraft' and having a blue diamond logo?", a: "DanTDM" },
-      { q: "In 'Avengers: Endgame,' what is the name of Iron Man’s daughter?", a: "Morgan Stark" },
-      { q: "What is the name of the princess in 'The Legend of Zelda' series?", a: "Zelda" },
-      { q: "Who sings 'Shake It Off'?", a: "Taylor Swift" },
-      { q: "In 'Frozen,' what is Elsa’s sister’s name?", a: "Anna" },
-      { q: "What is the name of the blocky sandbox game where you punch trees to gather wood?", a: "Minecraft" },
-      { q: "Who is the main villain in 'Star Wars: The Force Awakens'?", a: "Kylo Ren" },
-      { q: "What is the name of the streaming platform where MrBeast posts challenge videos?", a: "YouTube" },
-      { q: "In 'Toy Story,' what is the name of the cowboy doll?", a: "Woody" },
-      { q: "Who plays Captain Marvel in the Marvel movies?", a: "Brie Larson" },
-      { q: "What is the name of the purple villain in 'Avengers: Infinity War'?", a: "Thanos" },
-      { q: "In 'Among Us,' what do players do when a body is reported?", a: "Discuss/Vote" },
-      { q: "Who is the singer of 'Old Town Road'?", a: "Lil Nas X" },
-      { q: "What is the name of the fictional city where Batman lives?", a: "Gotham City" },
-      { q: "In 'The Hunger Games,' what is the main character’s name?", a: "Katniss Everdeen" },
-      { q: "What is the name of the dance move popularized by Fortnite?", a: "Floss" },
-      { q: "Who is the YouTuber known for 'Unspeakable' gaming and challenge videos?", a: "Unspeakable" },
-      { q: "In 'Moana,' what is the name of the demigod who helps Moana?", a: "Maui" },
-      { q: "What is the name of the boy band that sang 'Dynamite'?", a: "BTS" },
-      { q: "In 'Pokémon,' what is the name of the electric mouse Pokémon?", a: "Pikachu" },
-      { q: "Who plays Spider-Man in 'Spider-Man: No Way Home'?", a: "Tom Holland" },
-      { q: "What is the name of the game where you build and survive with friends on servers?", a: "Roblox" },
-      { q: "In 'Encanto,' what is the main family’s last name?", a: "Madrigal" },
-      { q: "Who sings 'Happier Than Ever'?", a: "Billie Eilish" },
-      { q: "What is the name of the green ogre in the movie 'Shrek'?", a: "Shrek" },
-      { q: "In 'Stranger Things,' what is the name of the alternate dimension?", a: "Upside Down" },
-      { q: "Who is the YouTuber known for 'Dream' and speedrunning Minecraft?", a: "Dream" },
-      { q: "In 'Black Panther,' what is the name of the fictional African country?", a: "Wakanda" },
-      { q: "What is the name of the singer who performed at the 2020 Super Bowl with Shakira?", a: "Jennifer Lopez" },
-      { q: "In 'Coco,' what instrument does Miguel play?", a: "Guitar" },
-      { q: "What is the name of the game where you collect cards and battle with creatures?", a: "Pokémon Trading Card Game" },
-      { q: "Who plays Harley Quinn in 'Birds of Prey'?", a: "Margot Robbie" },
-      { q: "In 'Soul,' what is the name of the main character who loves jazz?", a: "Joe Gardner" },
-      { q: "What is the name of the K-pop girl group that sang 'How You Like That'?", a: "Blackpink" },
-      { q: "In 'The Incredibles,' what is the name of the super-fast son?", a: "Dash" }
-    ];
+    let questionsList = [];       // Stores { team, question, answer }
+    let guessStates = {};         // { idx: { guess: '...', correct: null/true/false } }
 
-    // Play sound stub (actual audio files are commented out)
+    // —— Helper: Play Sound Stub —— 
     function playSound(soundId) {
-      // For debugging, you can log the sound play. In production, hook to audio elements.
       console.log(`Playing sound: ${soundId}`);
     }
 
-    // —— 1) Dynamically Generate Group Name Inputs —— 
+    // —— 1) Generate Group Name Inputs —— 
     document.getElementById('num-groups').addEventListener('input', (e) => {
       const num = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
       const groupNamesDiv = document.getElementById('group-names');
@@ -443,9 +265,12 @@
       }
     });
 
-    // —— 2) Start Game: Read Groups, Init Scores, Show Hint Section —— 
+    // Pre-generate one input row by default
+    document.getElementById('num-groups').dispatchEvent(new Event('input'));
+
+    // —— 2) Start Game: Read Groups, Init State, Show Hint Phase —— 
     document.getElementById('start-game').addEventListener('click', () => {
-      // Read number of groups
+      // Read group count and names
       const count = Math.min(Math.max(parseInt(document.getElementById('num-groups').value) || 1, 1), 10);
       groups = [];
       scores = {};
@@ -456,21 +281,28 @@
         scores[teamName] = 0;
       }
 
-      // Calculate maxQuestions = number of teams (one yes/no question each)
+      // Set maxQuestions = number of groups
       maxQuestions = groups.length;
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
       guessStates = {};
-      bonusPoints = {};
 
-      // Hide setup, show game & hint section
+      // Initialize UI
       document.getElementById('setup-section').classList.add('hidden');
       document.getElementById('game-section').classList.remove('hidden');
       document.getElementById('hint-section').classList.remove('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('questions').classList.add('hidden');
+      document.getElementById('question-section').classList.add('hidden');
+      document.getElementById('guess-section').classList.add('hidden');
+      document.getElementById('mark-screen').classList.add('hidden');
+      document.getElementById('round-controls').classList.add('hidden');
+      document.getElementById('end-game-section').classList.add('hidden');
 
-      // Display initial game state
-      document.getElementById('current-round').textContent = `Round: ${currentRound + 1}`;
+      // Display initial round & scores
+      document.getElementById('current-round').textContent = `Round: ${currentRound}`;
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
       renderScoreBoard();
     });
@@ -481,7 +313,7 @@
       const h2 = document.getElementById('hint2').value.trim();
       hintWords = [h1, h2];
 
-      // Display hints in the hints-display area
+      // Display hints
       const hintsDiv = document.getElementById('hints-display');
       hintsDiv.textContent = `Hints: ${h1} … ${h2}`;
       hintsDiv.classList.remove('hidden');
@@ -493,7 +325,12 @@
       // Initialize question phase
       questionCount = 0;
       currentGroupIndex = 0;
+      questionsList = [];
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('questions').classList.add('hidden');
+      document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
       updateCurrentTeamDisplay();
+
       document.getElementById('question-input').disabled = false;
       document.getElementById('answer-yes').disabled = false;
       document.getElementById('answer-no').disabled = false;
@@ -509,26 +346,24 @@
 
     function handleYesNoAnswer(answer) {
       const teamName = groups[currentGroupIndex];
-      const questionText = document.getElementById('question-input').value.trim() || '(no question text entered)';
-      // Store the asked question and the answer
-      questionsList.push({ team: teamName, q: questionText, a: answer });
+      const questionText = document.getElementById('question-input').value.trim() || '(no question)';
+      questionsList.push({ team: teamName, question: questionText, answer: answer });
       questionCount++;
       document.getElementById('question-count').textContent = `Questions Asked: ${questionCount} / ${maxQuestions}`;
 
-      // Optionally, you could append this to the questions-list div to show history
+      // Show question in history
       const qDiv = document.getElementById('questions');
       qDiv.classList.remove('hidden');
       const newEntry = document.createElement('div');
       newEntry.innerHTML = `<strong>${teamName}:</strong> "${questionText}" → <em>${answer}</em>`;
       qDiv.appendChild(newEntry);
 
-      // Disable this team's question input & buttons
+      // Disable this team's input
       document.getElementById('question-input').value = '';
       document.getElementById('question-input').disabled = true;
       document.getElementById('answer-yes').disabled = true;
       document.getElementById('answer-no').disabled = true;
 
-      // If more questions remain, move to next team
       if (questionCount < maxQuestions) {
         setTimeout(() => {
           currentGroupIndex++;
@@ -538,7 +373,6 @@
           document.getElementById('answer-no').disabled = false;
         }, 300);
       } else {
-        // All teams have asked exactly one question → go to Guess phase
         setTimeout(() => {
           showGuessSection();
         }, 300);
@@ -560,14 +394,15 @@
     function renderGuessTable() {
       const tbody = document.getElementById('guess-table-body');
       tbody.innerHTML = '';
+      guessStates = {};
+
       groups.forEach((teamName, idx) => {
         const tr = document.createElement('tr');
-        // Team name cell
+        // Team cell
         const tdTeam = document.createElement('td');
         tdTeam.textContent = teamName;
         tdTeam.classList.add('text-gray-700');
         tr.appendChild(tdTeam);
-
         // Guess input cell
         const tdGuess = document.createElement('td');
         const input = document.createElement('input');
@@ -576,191 +411,138 @@
         input.dataset.teamIndex = idx;
         tdGuess.appendChild(input);
         tr.appendChild(tdGuess);
-
-        // Status cell (to be filled in on submission)
-        const tdStatus = document.createElement('td');
-        tdStatus.textContent = '';
-        tdStatus.dataset.statusFor = idx;
-        tr.appendChild(tdStatus);
-
         tbody.appendChild(tr);
+
+        // Initialize guessStates
+        guessStates[idx] = { guess: '', correct: null };
       });
     }
 
-    // —— 6) Submit All Guesses —— 
+    // —— 6) Submit All Guesses → Show Mark Screen —— 
     document.getElementById('submit-guesses').addEventListener('click', () => {
-      // In this implementation, we do not have an "actual answer" field.
-      // If you wish to automatically check correctness, add an <input id="correct-answer"> in setup
-      // and compare each team’s guess. Otherwise, leave the “Correct/Incorrect” column blank
-      // or manually fill it in later.
-
       const inputs = document.querySelectorAll('#guess-table-body input');
       inputs.forEach((inp) => {
         const idx = parseInt(inp.dataset.teamIndex, 10);
         const guessText = inp.value.trim();
-        guessStates[idx] = { guess: guessText, correct: null };
-        // If you implement auto-check:
-        // const actual = document.getElementById('correct-answer').value.trim().toLowerCase();
-        // guessStates[idx].correct = (guessText.toLowerCase() === actual);
+        guessStates[idx].guess = guessText || '(no guess)';
       });
-
-      // After collecting guesses, show the Score Screen
-      showScoreScreen();
+      showMarkScreen();
     });
 
-    // —— 7) Render Score Board (Game State) —— 
-    function renderScoreBoard() {
-      const scoresDiv = document.getElementById('scores');
-      scoresDiv.innerHTML = '';
-      groups.forEach((teamName, idx) => {
-        const card = document.createElement('div');
-        card.classList.add('score-card');
-        card.style.setProperty('--index', idx);
-        const pts = scores[teamName] + (bonusPoints[idx] || 0);
-        card.innerHTML = `
-          <div class="text-lg font-bold">${teamName}</div>
-          <div>Points: ${pts}</div>
-        `;
-        scoresDiv.appendChild(card);
-      });
-    }
-
-    // —— 8) Show Score Screen —— 
-    function showScoreScreen() {
+    // —— 7) Show Mark Answers Phase —— 
+    function showMarkScreen() {
       document.getElementById('guess-section').classList.add('hidden');
-      const scoreCardsDiv = document.getElementById('score-cards');
-      scoreCardsDiv.innerHTML = '';
+      document.getElementById('mark-screen').classList.remove('hidden');
+
+      const tbody = document.getElementById('mark-table-body');
+      tbody.innerHTML = '';
 
       groups.forEach((teamName, idx) => {
-        const card = document.createElement('div');
-        card.classList.add('score-card-animated');
-        card.style.setProperty('--index', idx);
+        const tr = document.createElement('tr');
+        // Team cell
+        const tdTeam = document.createElement('td');
+        tdTeam.textContent = teamName;
+        tdTeam.classList.add('text-gray-700');
+        tr.appendChild(tdTeam);
+        // Guess cell
+        const tdGuess = document.createElement('td');
+        tdGuess.textContent = guessStates[idx].guess;
+        tdGuess.classList.add('text-gray-700');
+        tr.appendChild(tdGuess);
+        // Mark buttons cell
+        const tdMark = document.createElement('td');
+        tdMark.classList.add('flex', 'gap-4');
+        const btnCorrect = document.createElement('button');
+        btnCorrect.textContent = 'Correct ✅';
+        btnCorrect.classList.add('btn', 'bg-lime-500');
+        btnCorrect.dataset.teamIndex = idx;
+        const btnIncorrect = document.createElement('button');
+        btnIncorrect.textContent = 'Incorrect ❌';
+        btnIncorrect.classList.add('btn', 'bg-pink-500');
+        btnIncorrect.dataset.teamIndex = idx;
+        tdMark.appendChild(btnCorrect);
+        tdMark.appendChild(btnIncorrect);
+        tr.appendChild(tdMark);
 
-        const gs = guessStates[idx];
-        let statusText = '';
-        if (gs) {
-          statusText = gs.correct === true
-            ? '✅ Correct'
-            : gs.correct === false
-              ? '❌ Incorrect'
-              : '—'; 
-        }
+        tbody.appendChild(tr);
 
-        card.innerHTML = `
-          <div class="text-xl font-bold">${teamName}</div>
-          <div>Guess: ${gs ? gs.guess : '(no guess)'}</div>
-          <div>Status: ${statusText}</div>
-        `;
-        scoreCardsDiv.appendChild(card);
-
-        // Animate each card in
-        setTimeout(() => {
-          card.classList.add('show');
-        }, idx * 150);
+        // Event listeners for mark buttons
+        btnCorrect.addEventListener('click', () => markAnswer(idx, true, btnCorrect, btnIncorrect));
+        btnIncorrect.addEventListener('click', () => markAnswer(idx, false, btnCorrect, btnIncorrect));
       });
-
-      document.getElementById('score-screen').classList.remove('hidden');
-      // Show "Continue" after all cards have animated in (approx. groups.length * 150 + 500 ms)
-      setTimeout(() => {
-        document.getElementById('continue-game').classList.remove('hidden');
-      }, groups.length * 150 + 500);
     }
 
-    // —— 9) Continue After Score Screen —— 
-    document.getElementById('continue-game').addEventListener('click', () => {
-      document.getElementById('score-screen').classList.add('hidden');
-      // Check for ties or proceed to next round or end
-      const maxPts = Math.max(...groups.map((t, i) => scores[t] + (bonusPoints[i] || 0)));
-      const leaders = groups.filter((t, i) => (scores[t] + (bonusPoints[i] || 0)) === maxPts);
+    // Handle marking a single team's answer
+    function markAnswer(idx, isCorrect, btnCorrect, btnIncorrect) {
+      guessStates[idx].correct = isCorrect;
+      // Disable both buttons once marked
+      btnCorrect.disabled = true;
+      btnIncorrect.disabled = true;
+      btnCorrect.style.opacity = '0.6';
+      btnIncorrect.style.opacity = '0.6';
 
-      if (leaders.length > 1) {
-        // Tiebreaker
-        showTiebreaker(leaders);
-      } else {
-        // Celebrate winner
-        showCelebration(leaders[0]);
+      // Check if all teams have been marked
+      const allMarked = Object.values(guessStates).every(gs => gs.correct !== null);
+      if (allMarked) {
+        document.getElementById('finalize-round').classList.remove('hidden');
       }
-    });
+    }
 
-    // —— 10) Tiebreaker Screen —— 
-    function showTiebreaker(tiedTeams) {
-      const tbDiv = document.getElementById('tiebreaker-screen');
-      tbDiv.classList.remove('hidden');
-      document.getElementById('tied-teams').textContent = `Tied: ${tiedTeams.join(', ')}`;
-      const btnContainer = document.getElementById('tiebreaker-buttons');
-      btnContainer.innerHTML = '';
-      tiedTeams.forEach((name) => {
-        const btn = document.createElement('button');
-        btn.classList.add('btn', 'bg-lime-500');
-        btn.textContent = name;
-        btn.addEventListener('click', () => {
-          document.getElementById('tiebreaker-screen').classList.add('hidden');
-          showCelebration(name);
-        });
-        btnContainer.appendChild(btn);
+    // —— 8) Finalize Round: Update Scores & Show Round Controls —— 
+    document.getElementById('finalize-round').addEventListener('click', () => {
+      // Award 1 point for each correct guess
+      Object.entries(guessStates).forEach(([idxStr, gs]) => {
+        const idx = parseInt(idxStr, 10);
+        if (gs.correct) {
+          const teamName = groups[idx];
+          scores[teamName] += 1;
+        }
       });
-    }
-
-    // —— 11) Celebration Screen —— 
-    function showCelebration(winnerName) {
-      document.getElementById('winner-name').textContent = winnerName;
-      document.getElementById('celebration-screen').classList.remove('hidden');
-      // Launch confetti animation
-      launchConfetti('confetti-canvas');
-    }
-
-    document.getElementById('new-game-from-celebration').addEventListener('click', () => {
-      document.getElementById('celebration-screen').classList.add('hidden');
-      resetGame();
-    });
-
-    // —— 12) Swap Screen (Optional Surprise) —— 
-    // If your original code has a swap feature, hook it here. For now, it’s not invoked automatically.
-    document.getElementById('confirm-swap').addEventListener('click', () => {
-      const targetIdx = parseInt(document.getElementById('swap-target').value, 10);
-      const swapTeam = swappedPlayers.shift();
-      // Swap points or any other attribute between swapTeam and targetIdx
-      // ... (your original swap logic)
-      document.getElementById('swap-screen').classList.add('hidden');
       renderScoreBoard();
+      // Hide mark screen, show next-round/end-game
+      document.getElementById('mark-screen').classList.add('hidden');
+      document.getElementById('finalize-round').classList.add('hidden');
+      document.getElementById('round-controls').classList.remove('hidden');
     });
 
-    // —— 13) Bonus Screen —— 
-    // Show a bonus question if you wish.  
-    document.getElementById('bonus-yes').addEventListener('click', () => {
-      const teamIdx = parseInt(document.getElementById('bonus-team').value, 10);
-      bonusPoints[teamIdx] = (bonusPoints[teamIdx] || 0) + 1;
-      document.getElementById('bonus-screen').classList.add('hidden');
-      renderScoreBoard();
-    });
-    document.getElementById('bonus-no').addEventListener('click', () => {
-      document.getElementById('bonus-screen').classList.add('hidden');
-      renderScoreBoard();
+    // —— 9) Next Round: Prepare for New Round —— 
+    document.getElementById('next-round').addEventListener('click', () => {
+      currentRound++;
+      document.getElementById('current-round').textContent = `Round: ${currentRound}`;
+
+      // Clear previous round data
+      document.getElementById('hints-display').classList.add('hidden');
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('questions').classList.add('hidden');
+      document.getElementById('hint1').value = '';
+      document.getElementById('hint2').value = '';
+      document.getElementById('question-input').value = '';
+      questionCount = 0;
+      document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
+
+      // Hide round-controls, show hint-phase
+      document.getElementById('round-controls').classList.add('hidden');
+      document.getElementById('hint-section').classList.remove('hidden');
     });
 
-    // —— 14) End Game Early —— 
+    // —— 10) End Game: Show Final Scores & “Restart” —— 
     document.getElementById('end-game').addEventListener('click', () => {
-      // Show final scores and “Game Over”
+      document.getElementById('round-controls').classList.add('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+
       const finalDiv = document.getElementById('end-game-section');
-      const text = groups.map((t, i) => {
-        const pts = scores[t] + (bonusPoints[i] || 0);
-        return `${t}: ${pts} pts`;
+      const text = groups.map((t) => {
+        return `${t}: ${scores[t]} pts`;
       }).join(' | ');
       document.getElementById('final-scores').textContent = text;
-      document.getElementById('end-game-section').classList.remove('hidden');
-      document.getElementById('game-section').classList.add('hidden');
+      finalDiv.classList.remove('hidden');
     });
 
-    document.getElementById('new-game').addEventListener('click', () => {
-      document.getElementById('end-game-section').classList.add('hidden');
-      resetGame();
-    });
-
-    // —— 15) Reset Game —— 
-    function resetGame() {
-      // Reset all global variables
+    // —— 11) Restart Game: Reset All State —— 
+    document.getElementById('restart-game').addEventListener('click', () => {
+      // Reset globals
       groups = [];
-      currentRound = 0;
+      currentRound = 1;
       questionCount = 0;
       currentGroupIndex = 0;
       scores = {};
@@ -768,62 +550,46 @@
       maxQuestions = 0;
       questionsList = [];
       guessStates = {};
-      swappedPlayers = [];
-      bonusPoints = {};
 
-      // Clear UI Sections
+      // Reset UI
+      document.getElementById('end-game-section').classList.add('hidden');
       document.getElementById('setup-section').classList.remove('hidden');
       document.getElementById('game-section').classList.add('hidden');
-      document.getElementById('score-screen').classList.add('hidden');
-      document.getElementById('tiebreaker-screen').classList.add('hidden');
-      document.getElementById('celebration-screen').classList.add('hidden');
-      document.getElementById('swap-screen').classList.add('hidden');
-      document.getElementById('bonus-screen').classList.add('hidden');
-      document.getElementById('end-game-section').classList.add('hidden');
-      document.getElementById('questions').innerHTML = '';
-      document.getElementById('questions').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
       document.getElementById('group-names').innerHTML = '';
       document.getElementById('num-groups').value = 1;
       document.getElementById('scores').innerHTML = '';
-      document.getElementById('question-count').textContent = '';
       document.getElementById('current-round').textContent = '';
-    }
+      document.getElementById('question-count').textContent = '';
+      document.getElementById('mark-table-body').innerHTML = '';
+      document.getElementById('guess-table-body').innerHTML = '';
+      document.getElementById('questions').innerHTML = '';
+      document.getElementById('questions').classList.add('hidden');
+      document.getElementById('hints-display').classList.add('hidden');
+      document.getElementById('hint1').value = '';
+      document.getElementById('hint2').value = '';
+      document.getElementById('question-input').value = '';
+      document.getElementById('finalize-round').classList.add('hidden');
+      document.getElementById('round-controls').classList.add('hidden');
 
-    // —— 16) Confetti Launch (Canvas Animation Stub) —— 
-    function launchConfetti(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext('2d');
-      // Simple confetti loop (placeholder)
-      let particles = [];
-      const colors = ['#f44336','#e91e63','#9c27b0','#2196f3','#4caf50','#ffeb3b','#ff9800'];
-      for (let i = 0; i < 150; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height * -1,
-          r: Math.random() * 4 + 2,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          fallSpeed: Math.random() * 3 + 2
-        });
-      }
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.ellipse(p.x, p.y, p.r, p.r * 0.6, Math.random() * Math.PI, 0, 2 * Math.PI);
-          ctx.fill();
-          p.y += p.fallSpeed;
-          if (p.y > canvas.height) {
-            p.y = -10;
-            p.x = Math.random() * canvas.width;
-          }
-        });
-        requestAnimationFrame(draw);
-      }
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      draw();
+      // Re-generate group input row
+      document.getElementById('num-groups').dispatchEvent(new Event('input'));
+    });
+
+    // —— 12) Render Score Board (Game State) —— 
+    function renderScoreBoard() {
+      const scoresDiv = document.getElementById('scores');
+      scoresDiv.innerHTML = '';
+      groups.forEach((teamName, idx) => {
+        const card = document.createElement('div');
+        card.classList.add('score-card');
+        card.style.setProperty('--index', idx);
+        const pts = scores[teamName];
+        card.innerHTML = `
+          <div class="text-lg font-bold">${teamName}</div>
+          <div>Points: ${pts}</div>
+        `;
+        scoresDiv.appendChild(card);
+      });
     }
   </script>
 </body>
