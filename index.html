@@ -91,7 +91,7 @@
       padding: 12px;
       border: 2px solid #2dd4bf;
       border-radius: 8px;
-      font-size: 20px; /* Increased font size for input text */
+      font-size: 20px; /* Larger font for input text */
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 16px;
@@ -296,6 +296,12 @@
     let maxQuestions = 0;
     let questionsList = [];       // Stores { team, question, answer }
     let guessStates = {};         // { idx: { guess: '...', correct: null/true/false } }
+
+    // —— Ensure Celebrations Are Hidden on Load —— 
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('celebration-screen').classList.add('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+    });
 
     // —— Helper: Play Sound Stub —— 
     function playSound(soundId) {
