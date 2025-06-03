@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Guess in Ten Scorekeeper</title>
   <style>
     body {
@@ -68,14 +68,16 @@
       text-align: center;
       margin-bottom: 24px;
     }
-    .guess-table th, .guess-table td {
+    .guess-table th, .guess-table td,
+    .mark-table th, .mark-table td {
       padding: 12px;
       text-align: left;
       border-bottom: 1px solid #e5e7eb;
     }
-    .guess-table {
+    .guess-table, .mark-table {
       width: 100%;
       border-collapse: collapse;
+      margin-bottom: 16px;
     }
     .score-card {
       border-left: 4px solid;
@@ -85,14 +87,13 @@
       border-radius: 8px;
       margin: 8px 0;
     }
-    .mark-table th, .mark-table td {
+    input, select {
       padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .mark-table {
+      border: 2px solid #2dd4bf;
+      border-radius: 8px;
+      font-size: 20px; /* Increased font size for input text */
       width: 100%;
-      border-collapse: collapse;
+      box-sizing: border-box;
       margin-bottom: 16px;
     }
     .bg-gray-100 {
@@ -121,13 +122,59 @@
     .font-bold { font-weight: bold; }
     .text-center { text-align: center; }
     .hidden { display: none; }
+
+    /* Celebration / Winner Screen */
+    .celebration-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .celebration-card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      border: 4px solid #0d9488;
+      width: 320px;
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .celebration-card.show {
+      animation: celebrate 1s ease-in-out 2;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 11;
+    }
   </style>
 </head>
 <body>
   <div class="container section">
     <h1 class="text-4xl font-bold text-center mb-6">Guess in Ten Scorekeeper 🧠</h1>
 
-    <!-- Game Setup -->
+    <!-- Setup Section -->
     <div id="setup-section" class="mb-4">
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
       <div class="flex flex-col gap-4 bg-gray-100">
@@ -135,7 +182,7 @@
           <label for="num-groups" class="block text-lg font-bold text-gray-700">
             Number of Groups (1–10):
           </label>
-          <input id="num-groups" type="number" min="1" max="10" value="1">
+          <input id="num-groups" type="number" min="1" max="10" value="1" />
         </div>
         <div id="group-names" class="grid grid-cols-1 gap-4"></div>
         <button id="start-game" class="btn bg-cyan-500">Start Game 🚀</button>
@@ -152,8 +199,8 @@
       <div id="hint-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
-          <input id="hint1" type="text" placeholder="Hint 1">
-          <input id="hint2" type="text" placeholder="Hint 2">
+          <input id="hint1" type="text" placeholder="Hint 1" />
+          <input id="hint2" type="text" placeholder="Hint 2" />
           <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
         </div>
       </div>
@@ -166,7 +213,7 @@
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
         <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
         <div class="flex flex-col gap-4 bg-gray-100">
-          <input id="question-input" type="text" placeholder="Enter yes/no question">
+          <input id="question-input" type="text" placeholder="Enter yes/no question" />
           <div class="flex gap-4">
             <button id="answer-yes" class="btn bg-cyan-500">Yes 👍</button>
             <button id="answer-no" class="btn bg-pink-500">No 👎</button>
@@ -215,7 +262,7 @@
         <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
       </div>
 
-      <!-- Game State & Scores (always visible during game) -->
+      <!-- Game State & Scores (always visible) -->
       <div class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
         <div class="bg-gray-100 p-4 rounded-lg">
@@ -225,13 +272,15 @@
         </div>
       </div>
 
-      <!-- End Game Summary -->
-      <div id="end-game-section" class="hidden">
-        <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Over 🎉</h2>
-        <div class="bg-gray-100 p-4 rounded-lg">
-          <p id="final-scores" class="text-lg text-gray-700 mb-4"></p>
-          <button id="restart-game" class="btn bg-cyan-500">Restart Game 🚀</button>
-        </div>
+    </div>
+
+    <!-- Celebration / Winner Screen -->
+    <div id="celebration-screen" class="celebration-screen hidden">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="celebration-card">
+        <h3 id="winner-name" class="text-4xl font-bold text-teal-600 mb-4"></h3>
+        <p class="text-2xl text-gray-700 mb-4">🏆 Congratulations! 🏆</p>
+        <button id="restart-game" class="btn bg-cyan-500">Restart Game 🚀</button>
       </div>
     </div>
   </div>
@@ -260,11 +309,10 @@
       groupNamesDiv.innerHTML = '';
       for (let i = 0; i < num; i++) {
         groupNamesDiv.innerHTML += `
-          <input id="group-name-${i}" type="text" placeholder="Group ${i + 1} Name">
+          <input id="group-name-${i}" type="text" placeholder="Group ${i + 1} Name" />
         `;
       }
     });
-
     // Pre-generate one input row by default
     document.getElementById('num-groups').dispatchEvent(new Event('input'));
 
@@ -299,7 +347,7 @@
       document.getElementById('guess-section').classList.add('hidden');
       document.getElementById('mark-screen').classList.add('hidden');
       document.getElementById('round-controls').classList.add('hidden');
-      document.getElementById('end-game-section').classList.add('hidden');
+      document.getElementById('celebration-screen').classList.add('hidden');
 
       // Display initial round & scores
       document.getElementById('current-round').textContent = `Round: ${currentRound}`;
@@ -525,17 +573,21 @@
       document.getElementById('hint-section').classList.remove('hidden');
     });
 
-    // —— 10) End Game: Show Final Scores & “Restart” —— 
+    // —— 10) End Game: Show Winner Screen with Confetti —— 
     document.getElementById('end-game').addEventListener('click', () => {
-      document.getElementById('round-controls').classList.add('hidden');
-      document.getElementById('game-section').classList.add('hidden');
+      // Determine top score and winner(s)
+      const maxPts = Math.max(...groups.map(t => scores[t]));
+      const winners = groups.filter(t => scores[t] === maxPts);
+      const winnerText = winners.length === 1
+        ? `Winner: ${winners[0]}`
+        : `Winners: ${winners.join(', ')}`;
 
-      const finalDiv = document.getElementById('end-game-section');
-      const text = groups.map((t) => {
-        return `${t}: ${scores[t]} pts`;
-      }).join(' | ');
-      document.getElementById('final-scores').textContent = text;
-      finalDiv.classList.remove('hidden');
+      // Show celebration screen
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('celebration-screen').classList.remove('hidden');
+      document.getElementById('winner-name').textContent = winnerText;
+
+      launchConfetti('confetti-canvas');
     });
 
     // —— 11) Restart Game: Reset All State —— 
@@ -552,7 +604,7 @@
       guessStates = {};
 
       // Reset UI
-      document.getElementById('end-game-section').classList.add('hidden');
+      document.getElementById('celebration-screen').classList.add('hidden');
       document.getElementById('setup-section').classList.remove('hidden');
       document.getElementById('game-section').classList.add('hidden');
       document.getElementById('group-names').innerHTML = '';
@@ -590,6 +642,41 @@
         `;
         scoresDiv.appendChild(card);
       });
+    }
+
+    // —— 13) Confetti Launch —— 
+    function launchConfetti(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      const colors = ['#f44336','#e91e63','#9c27b0','#2196f3','#4caf50','#ffeb3b','#ff9800'];
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height * -1,
+          r: Math.random() * 4 + 2,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          fallSpeed: Math.random() * 3 + 2
+        });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, p.r, p.r * 0.6, Math.random() * Math.PI, 0, 2 * Math.PI);
+          ctx.fill();
+          p.y += p.fallSpeed;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      draw();
     }
   </script>
 </body>
