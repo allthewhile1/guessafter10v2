@@ -232,7 +232,7 @@
   <!-- <audio id="incorrect-sound" src="sounds/incorrect.wav"></audio> -->
 
   <div class="container section">
-    <h1 class="text-4xl font-bold text-center mb-4">Guess in Ten Scorekeeper 🧠</h1>
+    <h1 class="text-4xl font-bold text-center mb-6">Guess in Ten Scorekeeper 🧠</h1>
     <div id="hints-display" class="hints-display mb-4 hidden"></div>
 
     <!-- Setup Section -->
@@ -240,7 +240,7 @@
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
       <div class="flex flex-col gap-4 bg-gray-100">
         <div>
-          <label class="block text-lg font-bold text-gray-700">Number of Groups (1-10):</label>
+          <label for="num-groups" class="block text-lg font-bold text-gray-700">Number of Groups (1-10):</label>
           <input id="num-groups" type="number" min="1" max="10" value="1">
         </div>
         <div id="group-names" class="grid grid-cols-1 gap-4"></div>
@@ -250,27 +250,28 @@
 
     <!-- Game Section -->
     <div id="game-section" class="hidden">
-      <div id="questions-list" class="questions-list mb-4 hidden"></div>
+      <div id="questions" class="questions-list mb-4 hidden"></div>
       <div id="hint-section" class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
-          <input id="hint1" type="text" placeholder="Hint Word 1">
-          <input id="hint2" type="text" placeholder="Hint Word 2">
+          <input id="hint1" type="text" placeholder="Hint 1">
+          <input id="hint2" type="text" placeholder="Hint 2">
           <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
         </div>
       </div>
       <div id="question-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
-        <p id="current-team" class="text-4xl text-pink-600 font-bold mb-6 text-center"></p>
+        <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
         <div class="flex flex-col gap-4 bg-gray-100">
           <select id="group-selector"></select>
-          <input id="input" type="text" placeholder="Enter question">
+          <input id="question-input" type="text" placeholder="Enter question">
           <div class="flex gap-4">
             <button id="answer-yes" class="btn bg-cyan-500">Yes 👍</button>
             <button id="answer-no" class="btn bg-pink-500">No 👎</button>
           </div>
         </div>
-      <div id="guess-section" class="mb-4">
+      </div>
+      <div id="guess-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Enter Team Guesses</h2>
         <div class="bg-gray-100">
           <table class="guess-table">
@@ -291,26 +292,26 @@
         <div class="bg-gray-100">
           <p id="current-round" class="text-lg text-gray-700 mb-2"></p>
           <p id="question-count" class="text-lg text-gray-700 mb-2"></p>
-          <div id="scores-display" class="grid grid-cols-1 gap-2"></div>
+          <div id="scores" class="grid grid-cols-1 gap-2"></div>
         </div>
-      <!-- End Game -->
-      <button id="end-game-btn" class="btn bg-pink-500">End Game 🛑</button>
+      </div>
+      <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
     </div>
 
     <!-- Score Screen -->
     <div id="score-screen" class="score-screen hidden">
       <div id="score-cards"></div>
-      <button id="continue-btn" class="btn bg-cyan-500 mt-4 hidden">Continue 🚀</button>
+      <button id="continue-game" class="btn bg-cyan-500 mt-4 hidden">Continue 🚀</button>
     </div>
 
     <!-- Swap Screen -->
     <div id="swap-screen" class="swap-screen hidden">
       <canvas id="swap-confetti-canvas"></canvas>
       <div class="swap-card">
-        <h3 class="text-2xl font-bold text-teal-600 mb-2">Swap Surprise! 🎉</h3>
-        <p id="swap-team" class="text-xl text-center-700 mb-2"></p>
+        <h3 class="text-2xl font-bold text-teal-600 mb-4">Swap Surprise! 🎉</h3>
+        <p id="swap-team" class="text-xl text-gray-700 mb-4 spinning-wheel"></p>
         <select id="swap-target" class="w-full"></select>
-        <button id="confirm-swap-btn" class="btn bg-cyan-500">Confirm Swap ✅</button>
+        <button id="confirm-swap" class="btn bg-cyan-500">Confirm Swap 🚀</button>
       </div>
     </div>
 
@@ -318,37 +319,42 @@
     <div id="bonus-screen" class="bonus-screen hidden">
       <div class="bonus-card">
         <h3 class="text-2xl font-bold text-teal-600 mb-4">Bonus Blitz! ⚡</h3>
-        <div id="bonus-question" class="bonus-question text-xl mb-4"></div>
-        <div id="bonus-timer" class="timer-bonus mb-4"></div>
-        <select id="bonus-winner" class="w-full"></select>
-        <button id="award-bonus-btn" class="btn bg-cyan-500">Award Point 🔥</button>
+        <div id="bonus-question" class="bonus-question text-xl text-gray-700 mb-4"></div>
+        <div id="bonus-answer" class="text-lg text-lime-600 font-bold mb-4 hidden"></div>
+        <div id="bonus-timer" class="timer text-lg text-pink-600 font-bold mb-4"></div>
+        <select id="bonus-team" class="w-full mb-4"></select>
+        <div id="bonus-decision" class="flex gap-4 hidden">
+          <button id="bonus-yes" class="btn bg-lime-500">Yes ✅</button>
+          <button id="bonus-no" class="btn bg-pink-500">No ❌</button>
+        </div>
       </div>
+    </div>
+
     <!-- Tiebreaker Screen -->
     <div id="tiebreaker-screen" class="tiebreaker-screen hidden">
       <div class="tiebreaker-card">
-        <h3 class="text-3xl font-bold text-teal-600 mb-2">Tiebreaker!</h3>
-        <p id="tied-text" class="teams-xl text-gray-700 mb-4"></p>
-        <div class="flex flex-col gap-4" id="tiebreaker-buttons"></div>
-        </div>
-
+        <h3 class="text-2xl font-bold text-teal-600 mb-4">Tiebreaker!</h3>
+        <p id="tied-teams" class="text-xl text-gray-700 mb-4"></p>
+        <div id="tiebreaker-buttons" class="flex flex-col gap-4"></div>
       </div>
+    </div>
 
     <!-- Celebration Screen -->
     <div id="celebration-screen" class="celebration-screen hidden">
       <canvas id="confetti-canvas"></canvas>
       <div class="celebration-card">
-        <h3 class="text-4xl font-bold text-center-600 mb-4" id="winner-text"></h3>
+        <h3 id="winner-name" class="text-4xl font-bold text-teal-600 mb-4"></h3>
         <p class="text-2xl text-gray-700">Winner! 🏆</p>
       </div>
-      <button id="new-game-btn-celebration" class="btn bg-cyan-500 mt-4">Start New Game 🚀</button>
-      </div>
+      <button id="new-game-from-celebration" class="btn bg-cyan-500 mt-4">Start New Game 🚀</button>
+    </div>
 
     <!-- End Game Section -->
     <div id="end-game-section" class="hidden">
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Over 🎉</h2>
       <div class="bg-gray-100">
-        <p id="final-scores-text" class="text-lg text-gray-700 mb-4"></p>
-        <button id="new-game-btn" class="btn bg-cyan-500">Start New Game</button>
+        <p id="final-scores" class="text-lg text-gray-700 mb-4"></p>
+        <button id="new-game" class="btn bg-cyan-500">Start New Game 🚀</button>
       </div>
     </div>
   </div>
@@ -409,10 +415,7 @@
     ];
 
     function playSound(soundId) {
-      // const sound = document.getElementById(soundId);
-      // sound.currentTime = 0;
-      // sound.play().catch(() => {});
-      console.log(`Playing sound: ${soundId}`); // Placeholder for offline
+      console.log(`Playing sound: ${soundId}`);
     }
 
     document.getElementById('num-groups').addEventListener('input', (e) => {
@@ -427,434 +430,4 @@
     });
 
     document.getElementById('start-game').addEventListener('click', () => {
-      playSound('click-sound');
-      groups = [];
-      scores = {};
-      guessStates = {};
-      swappedPlayers = [];
-      bonusPoints = {};
-      const numGroups = Math.min(Math.max(parseInt(document.getElementById('num-groups').value) || 1, 1), 10);
-      for (let i = 0; i < numGroups; i++) {
-        const name = document.getElementById(`group-name-${i}`)?.value || `Group ${i + 1}`;
-        groups.push(name);
-        scores[name] = 0;
-        bonusPoints[name] = 0;
-      }
-      currentRound = 1;
-      questions = [];
-      questionCount = 0;
-      currentGroupIndex = 0;
-      hintWords = ['', ''];
-      document.getElementById('hint-section').classList.remove('hidden');
-      document.getElementById('questions-list').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
-      updateGameState();
-      document.getElementById('setup-section').classList.add('hidden');
-      document.getElementById('game-section').classList.remove('hidden');
-      updateGroupSelectors();
-    });
-
-    document.getElementById('set-hints').addEventListener('click', () => {
-      playSound('click-sound');
-      hintWords = [
-        document.getElementById('hint1').value.trim(),
-        document.getElementById('hint2').value.trim()
-      ];
-      document.getElementById('hint-section').classList.add('hidden');
-      document.getElementById('question-section').classList.remove('hidden');
-      document.getElementById('questions-list').classList.remove('hidden');
-      document.getElementById('hints-display').classList.remove('hidden');
-      updateGroupSelectors();
-      updateGameState();
-    });
-
-    function recordQuestion(answer) {
-      playSound('click-sound');
-      const group = document.getElementById('group-selector').value;
-      const question = document.getElementById('question-input').value.trim();
-      if (question) {
-        questions.push({ group, question, answer });
-        questionCount++;
-        document.getElementById('question-input').value = '';
-        currentGroupIndex = (currentGroupIndex + 1) % groups.length;
-        if (questionCount >= 10) {
-          document.getElementById('question-section').classList.add('hidden');
-          document.getElementById('guess-section').classList.remove('hidden');
-          initializeGuessTable();
-        }
-        updateGroupSelectors();
-        updateGameState();
-      }
-    }
-
-    document.getElementById('answer-yes').addEventListener('click', () => recordQuestion('Yes'));
-    document.getElementById('answer-no').addEventListener('click', () => recordQuestion('No'));
-
-    function initializeGuessTable() {
-      guessStates = {};
-      const tableBody = document.getElementById('guess-table-body');
-      tableBody.innerHTML = '';
-      groups.forEach(group => {
-        guessStates[group] = { guess: '', correct: null };
-        tableBody.innerHTML += `
-          <tr id="guess-row-${group}">
-            <td class="text-lg">${group}</td>
-            <td><input id="guess-input-${group}" type="text" placeholder="Enter guess"></td>
-            <td>
-              <button id="guess-correct-${group}" class="btn bg-lime-500">Correct ✅</button>
-              <button id="guess-incorrect-${group}" class="btn bg-pink-500">Incorrect ❌</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      groups.forEach(group => {
-        document.getElementById(`guess-input-${group}`).addEventListener('input', (e) => {
-          guessStates[group].guess = e.target.value.trim();
-        });
-        document.getElementById(`guess-correct-${group}`).addEventListener('click', () => {
-          playSound('correct-sound');
-          guessStates[group].correct = true;
-          updateButtonStyles(group);
-        });
-        document.getElementById(`guess-incorrect-${group}`).addEventListener('click', () => {
-          playSound('incorrect-sound');
-          guessStates[group].correct = false;
-          updateButtonStyles(group);
-        });
-      });
-    }
-
-    function updateButtonStyles(group) {
-      const correctBtn = document.getElementById(`guess-correct-${group}`);
-      const incorrectBtn = document.getElementById(`guess-incorrect-${group}`);
-      if (guessStates[group].correct === true) {
-        correctBtn.classList.add('guess-btn-selected', 'bg-lime-400');
-        correctBtn.classList.remove('bg-lime-500');
-        incorrectBtn.classList.remove('guess-btn-selected', 'bg-pink-400');
-        incorrectBtn.classList.add('bg-pink-500');
-      } else if (guessStates[group].correct === false) {
-        incorrectBtn.classList.add('guess-btn-selected', 'bg-pink-400');
-        incorrectBtn.classList.remove('bg-pink-500');
-        correctBtn.classList.remove('guess-btn-selected', 'bg-lime-400');
-        correctBtn.classList.add('bg-lime-500');
-      }
-    }
-
-    function showScoreScreen() {
-      const scoreScreen = document.getElementById('score-screen');
-      const scoreCards = document.getElementById('score-cards');
-      scoreCards.innerHTML = '';
-      document.getElementById('game-section').classList.add('hidden');
-      document.getElementById('questions-list').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
-      scoreScreen.classList.remove('hidden');
-
-      const sortedTeams = Object.entries(scores).map(([group, score], index) => ({
-        group,
-        score,
-        index
-      })).sort((a, b) => {
-        if (a.score === b.score) {
-          return a.group.localeCompare(b.group);
-        }
-        return a.score - b.score;
-      });
-
-      sortedTeams.reverse().forEach((team, i) => {
-        const card = document.createElement('div');
-        card.className = 'score-card-animated';
-        card.style.setProperty('--index', team.index);
-        card.innerHTML = `
-          <h3 class="text-2xl font-bold text-teal-600">${team.group}</h3>
-          <p class="text-xl text-gray-700">Score: ${team.score}${bonusPoints[team.group] > 0 ? ` (+${bonusPoints[team.group]} bonus)` : ''}</p>
-        `;
-        scoreCards.appendChild(card);
-        setTimeout(() => {
-          card.classList.add('show');
-        }, i * 1000);
-      });
-
-      setTimeout(() => {
-        document.getElementById('continue-btn').classList.remove('hidden');
-      }, sortedTeams.length * 1000);
-    }
-
-    function showSwapScreen() {
-      const scoringTeams = groups.filter(g => questions.some(q => q.group === g && q.correct));
-      if (!scoringTeams.length) return startNextRound();
-      const swapTeam = scoringTeams[Math.floor(Math.random() * scoringTeams.length)];
-      document.getElementById('swap-team').textContent = `${swapTeam} gets to steal a player!`;
-      const swapTarget = document.getElementById('swap-target');
-      swapTarget.innerHTML = groups
-        .filter(g => g !== swapTeam && !swappedPlayers.some(s => s.from === g))
-        .map(g => `<option value="${g}">${g}</option>`)
-        .join('');
-      if (!swapTarget.innerHTML) return startNextRound();
-
-      const canvas = document.getElementById('swap-confetti-canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const particles = [];
-      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
-      for (let i = 0; i < 50; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          size: Math.random() * 8 + 4,
-          speed: Math.random() * 4 + 1,
-          color: colors[Math.floor(Math.random() * colors.length)]
-        });
-      }
-
-      function animateConfetti() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          p.y += p.speed;
-          if (p.y > canvas.height) p.y = -p.size;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-        });
-        if (document.getElementById('swap-screen').classList.contains('hidden')) return;
-        requestAnimationFrame(animateConfetti);
-      }
-
-      document.getElementById('swap-screen').classList.remove('hidden');
-      document.querySelector('.swap-card').classList.add('show');
-      animateConfetti();
-
-      document.getElementById('confirm-swap-btn').onclick = () => {
-        playSound('click-sound');
-        const target = swapTarget.value;
-        swappedPlayers.push({ from: target, to: swapTeam, round: currentRound });
-        document.getElementById('swap-screen').classList.add('hidden');
-        startNextRound();
-      };
-    }
-
-    function showBonusScreen() {
-      const question = bonusQuestions[Math.floor(Math.random() * bonusQuestions.length)];
-      document.getElementById('bonus-question').textContent = question.q;
-      const bonusWinner = document.getElementById('bonus-winner');
-      bonusWinner.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join('');
-      let timeLeft = 10;
-      document.getElementById('bonus-timer').textContent = `Time: ${timeLeft}s`;
-      const timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('bonus-timer').textContent = `Time: ${timeLeft}s`;
-        if (timeLeft <= 0) clearInterval(timer);
-      }, 1000);
-
-      document.getElementById('bonus-screen').classList.remove('hidden');
-      document.querySelector('.bonus-card').classList.add('show');
-
-      document.getElementById('award-bonus-btn').onclick = () => {
-        playSound('correct-sound');
-        const winner = bonusWinner.value;
-        scores[winner]++;
-        bonusPoints[winner] = (bonusPoints[winner] || 0) + 1;
-        clearInterval(timer);
-        document.getElementById('bonus-screen').classList.add('hidden');
-        startNextRound();
-      };
-    }
-
-    function startNextRound() {
-      document.document.getElementById('game-section').classList.remove('hidden');
-      currentRound++;
-      questionCount = 0;
-      questions = [];
-      hintWords = ['', ''];
-      document.getElementById('hint1').value = '';
-      document.getElementById('hint2').value = '';
-      document.getElementById('guess-section').classList.add('hidden');
-      document.getElementById('question-section').classList.remove('hidden');
-      document.getElementById('hint-section').classList.add('hidden');
-      document.getElementById('questions-list').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
-      updateGameState();
-    }
-
-    function showTiebreakerScreen(tiedTeams) {
-      const tiebreakerScreen = document.getElementById('tiebreaker-screen');
-      const tiedTeamsText = document.getElementById('tied-teams-text');
-      const tiebreakerButtons = document.getElementById('tiebreaker-buttons');
-      tiebreakerButtons.innerHTML = '';
-      tiedTeamsText.textContent = `${tiedTeams.join(' vs ')}`;
-
-      tiedTeams.forEach((team, i) => {
-        const button = document.createElement('button');
-        button.className = `btn bg-${i === 0 ? 'lime-500' : 'pink-500'}`;
-        button.textContent = `Select ${team}`;
-        button.onclick = () => {
-          playSound('correct-sound');
-          scores[team]++;
-          document.getElementById('tiebreaker-screen').classList.add('hidden');
-          showCelebrationScreen(team);
-        };
-        tiebreakerButtons.appendChild(button);
-      });
-
-      document.getElementById('game-section').classList.add('hidden');
-      document.getElementById('score-screen').classList.add('hidden');
-      document.getElementById('questions-list').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
-      tiebreakerScreen.classList.remove('hidden');
-    }
-
-    function showCelebrationScreen(winner) {
-      const celebrationScreen = document.getElementById('celebration-screen');
-      const winnerName = document.getElementById('winner-name');
-      winnerName.textContent = winner;
-
-      const canvas = document.getElementById('confetti-canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particles = [];
-      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
-      for (let i = 0; i < 100; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          size: Math.random() * 10 + 5,
-          speed: Math.random() * 5 + 2,
-          color: colors[Math.floor(Math.random() * colors.length)]
-        });
-      }
-
-      function animateConfetti() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          p.y += p.speed;
-          if (p.y > canvas.height) p.y = -p.size;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-        });
-        if (document.getElementById('celebration-screen').classList.contains('hidden')) return;
-        requestAnimationFrame(animateConfetti);
-      }
-
-      document.getElementById('game-section').classList.add('hidden');
-      document.getElementById('score-screen').classList.add('hidden');
-      document.getElementById('tiebreaker-screen').classList.add('hidden');
-      document.getElementById('questions-list').classList.add('hidden');
-      document.getElementById('hints-display').classList.add('hidden');
-      celebrationScreen.classList.remove('hidden');
-      document.querySelector('.celebration-card').classList.add('show');
-      animateConfetti();
-    }
-
-    document.getElementById('submit-guesses').addEventListener('click', () => {
-      playSound('click-sound');
-      let allGuessesEntered = true;
-      let gameEnded = false;
-
-      groups.forEach(group => {
-        const state = guessStates[group];
-        if (state.guess && state.correct !== null) {
-          questions.push({ group, guess: state.guess, correct: state.correct });
-          if (state.correct) {
-            scores[group]++;
-            if (scores[group] >= 10) {
-              gameEnded = true;
-            }
-          }
-        } else {
-          allGuessesEntered = false;
-        }
-      });
-
-      if (!allGuessesEntered) {
-        alert('Please enter a guess and select Correct or Incorrect for each team.');
-        return;
-      }
-
-      showScoreScreen();
-
-      document.getElementById('continue-btn').addEventListener('click', () => {
-        playSound('click-sound');
-        document.getElementById('score-screen').classList.add('hidden');
-        if (gameEnded) {
-          const maxScore = Math.max(...Object.values(scores));
-          const winners = Object.keys(scores).filter(g => scores[g] === maxScore);
-          if (winners.length > 1) {
-            showTiebreakerScreen(winners);
-          } else {
-            showCelebrationScreen(winners[0]);
-          }
-        } else {
-          const rand = Math.random();
-          if (rand < 0.35) showSwapScreen();
-          else if (rand < 0.7) showBonusScreen();
-          else startNextRound();
-        }
-      }, { once: true });
-    });
-
-    document.getElementById('end-game-btn').addEventListener('click', () => {
-      playSound('click-sound');
-      const maxScore = Math.max(...Object.values(scores));
-      const winners = Object.keys(scores).filter(g => scores[g] === maxScore);
-      if (winners.length > 1) {
-        showTiebreakerScreen(winners);
-      } else {
-        showCelebrationScreen(winners[0]);
-      }
-    });
-
-    document.getElementById('new-game-btn-celebration').addEventListener('click', () => {
-      playSound('click-sound');
-      document.getElementById('celebration-screen').classList.add('hidden');
-      document.getElementById('setup-section').classList.remove('hidden');
-      document.getElementById('num-groups').value = '1';
-      document.getElementById('group-names').innerHTML = `
-        <input id="group-name-0" type="text" placeholder="Group 1 Name">
-      `;
-    });
-
-    document.getElementById('new-game-btn').addEventListener('click', () => {
-      playSound('click-sound');
-      document.getElementById('end-game-section').classList.add('hidden');
-      document.getElementById('setup-section').classList.remove('hidden');
-      document.getElementById('num-groups').value = '1';
-      document.getElementById('group-names').innerHTML = `
-        <input id="group-name-0" type="text" placeholder="Group 1 Name">
-      `;
-    });
-
-    function updateGroupSelectors() {
-      const groupSelector = document.getElementById('group-selector');
-      groupSelector.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join('');
-      groupSelector.selectedIndex = currentGroupIndex;
-      document.getElementById('current-team').textContent = `Current Team: ${groups[currentGroupIndex] || 'None'}`;
-    }
-
-    function updateGameState() {
-      document.getElementById('current-round').textContent = `Round: ${currentRound}`;
-      document.getElementById('question-count').textContent = `Questions Asked: ${questionCount}/10`;
-      document.getElementById('hints-display').textContent = `Hints: ${hintWords.join(', ')}`;
-      document.getElementById('questions-list').innerHTML = questions.map(q => {
-        if (q.question) {
-          return `<p><strong>${q.group}</strong>: ${q.question} - <span class="${q.answer === 'Yes' ? 'text-lime-600' : 'text-pink-600'} font-bold">${q.answer}</span></p>`;
-        } else {
-          return `<p><strong>${q.group}</strong> guessed "${q.guess}" - <span class="${q.correct ? 'text-lime-600' : 'text-pink-600'} font-bold">${q.correct ? 'Correct' : 'Incorrect'}</span></p>`;
-        }
-      }).join('');
-      document.getElementById('scores-display').innerHTML = Object.entries(scores)
-        .map(([group, score], index) => {
-          const swaps = swappedPlayers.filter(s => s.to === group && s.round === currentRound - 1);
-          const swapText = swaps.length ? ` (+${swaps.map(s => `Player from ${s.from}`).join(', ')})` : '';
-          return `<div class="score-card" style="--index: ${index}">${group}${swapText}: ${score} points${bonusPoints[group] > 0 ? ` (+${bonusPoints[group]} bonus)` : ''}</div>`;
-        })
-        .join('');
-    }
-  </script>
-</body>
-</html>
+      play
