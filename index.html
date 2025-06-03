@@ -91,7 +91,7 @@
       padding: 12px;
       border: 2px solid #2dd4bf;
       border-radius: 8px;
-      font-size: 20px; /* Larger font for input text */
+      font-size: 20px;
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 16px;
@@ -121,9 +121,7 @@
     .text-4xl { font-size: 36px; }
     .font-bold { font-weight: bold; }
     .text-center { text-align: center; }
-    .hidden { display: none; }
-
-    /* Celebration / Winner Screen */
+    .hidden { display: none !important; } /* Added !important to prevent overrides */
     .celebration-screen {
       position: fixed;
       top: 0;
@@ -173,8 +171,6 @@
 <body>
   <div class="container section">
     <h1 class="text-4xl font-bold text-center mb-6">Guess in Ten Scorekeeper 🧠</h1>
-
-    <!-- Setup Section -->
     <div id="setup-section" class="mb-4">
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
       <div class="flex flex-col gap-4 bg-gray-100">
@@ -188,14 +184,8 @@
         <button id="start-game" class="btn bg-cyan-500">Start Game 🚀</button>
       </div>
     </div>
-
-    <!-- Main Game Section -->
     <div id="game-section" class="hidden">
-
-      <!-- Hints Display -->
       <div id="hints-display" class="hints-display hidden"></div>
-
-      <!-- Hint Input Phase -->
       <div id="hint-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
@@ -204,11 +194,7 @@
           <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
         </div>
       </div>
-
-      <!-- Questions History -->
       <div id="questions" class="questions-list hidden"></div>
-
-      <!-- Question-Asking Phase -->
       <div id="question-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
         <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
@@ -220,8 +206,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Guess Entry Phase -->
       <div id="guess-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Enter Team Guesses</h2>
         <div class="bg-gray-100">
@@ -237,8 +221,6 @@
           <button id="submit-guesses" class="btn bg-cyan-500 mt-4">Submit All Guesses 🚀</button>
         </div>
       </div>
-
-      <!-- Mark Answers Phase -->
       <div id="mark-screen" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Mark Answers</h2>
         <div class="bg-gray-100">
@@ -255,14 +237,10 @@
           <button id="finalize-round" class="btn bg-cyan-500 hidden">Finalize Round 🚀</button>
         </div>
       </div>
-
-      <!-- Round Controls: Next Round or End Game -->
       <div id="round-controls" class="mb-4 hidden">
         <button id="next-round" class="btn bg-lime-500 mr-4">Next Round 🕒</button>
         <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
       </div>
-
-      <!-- Game State & Scores (always visible) -->
       <div class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
         <div class="bg-gray-100 p-4 rounded-lg">
@@ -271,10 +249,7 @@
           <div id="scores" class="grid grid-cols-1 gap-2"></div>
         </div>
       </div>
-
     </div>
-
-    <!-- Celebration / Winner Screen -->
     <div id="celebration-screen" class="celebration-screen hidden">
       <canvas id="confetti-canvas"></canvas>
       <div class="celebration-card">
@@ -284,9 +259,7 @@
       </div>
     </div>
   </div>
-
   <script>
-    // —— Global Variables —— 
     let groups = [];
     let currentRound = 1;
     let questionCount = 0;
@@ -294,21 +267,23 @@
     let scores = {};
     let hintWords = ['', ''];
     let maxQuestions = 0;
-    let questionsList = [];       // Stores { team, question, answer }
-    let guessStates = {};         // { idx: { guess: '...', correct: null/true/false } }
+    let questionsList = [];
+    let guessStates = {};
 
-    // —— Ensure Celebrations Are Hidden on Load —— 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('celebration-screen').classList.add('hidden');
+      console.log('DOMContentLoaded: Ensuring celebration screen is hidden');
+      const celebrationScreen = document.getElementById('celebration-screen');
+      if (!celebrationScreen.classList.contains('hidden')) {
+        celebrationScreen.classList.add('hidden');
+        console.log('Added hidden class to celebration-screen');
+      }
       document.getElementById('game-section').classList.add('hidden');
     });
 
-    // —— Helper: Play Sound Stub —— 
     function playSound(soundId) {
       console.log(`Playing sound: ${soundId}`);
     }
 
-    // —— 1) Generate Group Name Inputs —— 
     document.getElementById('num-groups').addEventListener('input', (e) => {
       const num = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
       const groupNamesDiv = document.getElementById('group-names');
@@ -318,33 +293,45 @@
           <input id="group-name-${i}" type="text" placeholder="Group ${i + 1} Name" />
         `;
       }
+      console.log(`Generated ${num} group name inputs`);
     });
-    // Pre-generate one input row by default
     document.getElementById('num-groups').dispatchEvent(new Event('input'));
 
-    // —— 2) Start Game: Read Groups, Init State, Show Hint Phase —— 
-    document.getElementById('start-game').addEventListener('click', () => {
-      // Read group count and names
-      const count = Math.min(Math.max(parseInt(document.getElementById('num-groups').value) || 1, 1), 10);
+    document.getElementById('start-game').addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Start Game clicked');
+      const numGroupsInput = document.getElementById('num-groups');
+      let count = parseInt(numGroupsInput.value) || 1;
+      count = Math.min(Math.max(count, 1), 10);
       groups = [];
       scores = {};
-      for (let i = 0; i < count; i++) {
-        const nameInput = document.getElementById(`group-name-${i}`);
-        const teamName = nameInput.value.trim() || `Team ${i + 1}`;
-        groups.push(teamName);
-        scores[teamName] = 0;
+      try {
+        for (let i = 0; i < count; i++) {
+          const nameInput = document.getElementById(`group-name-${i}`);
+          if (!nameInput) {
+            console.error(`Group name input for index ${i} not found`);
+            alert('Please ensure all group name inputs are available.');
+            return;
+          }
+          const teamName = nameInput.value.trim() || `Team ${i + 1}`;
+          groups.push(teamName);
+          scores[teamName] = 0;
+        }
+      } catch (e) {
+        console.error('Error initializing groups:', e);
+        alert('Error initializing groups. Please try again.');
+        return;
       }
-
-      // Set maxQuestions = number of groups
       maxQuestions = groups.length;
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
       guessStates = {};
-
-      // Initialize UI
+      console.log('Hiding setup-section');
       document.getElementById('setup-section').classList.add('hidden');
+      console.log('Showing game-section');
       document.getElementById('game-section').classList.remove('hidden');
+      console.log('Showing hint-section');
       document.getElementById('hint-section').classList.remove('hidden');
       document.getElementById('hints-display').classList.add('hidden');
       document.getElementById('questions').innerHTML = '';
@@ -354,29 +341,24 @@
       document.getElementById('mark-screen').classList.add('hidden');
       document.getElementById('round-controls').classList.add('hidden');
       document.getElementById('celebration-screen').classList.add('hidden');
-
-      // Display initial round & scores
       document.getElementById('current-round').textContent = `Round: ${currentRound}`;
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
-      renderScoreBoard();
+      try {
+        renderScoreBoard();
+      } catch (e) {
+        console.error('Error rendering scoreboard:', e);
+      }
     });
 
-    // —— 3) After Hints Are Set: Show Question-Asking Phase —— 
     document.getElementById('set-hints').addEventListener('click', () => {
       const h1 = document.getElementById('hint1').value.trim();
       const h2 = document.getElementById('hint2').value.trim();
       hintWords = [h1, h2];
-
-      // Display hints
       const hintsDiv = document.getElementById('hints-display');
       hintsDiv.textContent = `Hints: ${h1} … ${h2}`;
       hintsDiv.classList.remove('hidden');
-
-      // Hide hint inputs, show question UI
       document.getElementById('hint-section').classList.add('hidden');
       document.getElementById('question-section').classList.remove('hidden');
-
-      // Initialize question phase
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
@@ -384,13 +366,11 @@
       document.getElementById('questions').classList.add('hidden');
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
       updateCurrentTeamDisplay();
-
       document.getElementById('question-input').disabled = false;
       document.getElementById('answer-yes').disabled = false;
       document.getElementById('answer-no').disabled = false;
     });
 
-    // —— 4) Yes / No Answer Handlers —— 
     document.getElementById('answer-yes').addEventListener('click', () => {
       handleYesNoAnswer('Yes');
     });
@@ -404,20 +384,15 @@
       questionsList.push({ team: teamName, question: questionText, answer: answer });
       questionCount++;
       document.getElementById('question-count').textContent = `Questions Asked: ${questionCount} / ${maxQuestions}`;
-
-      // Show question in history
       const qDiv = document.getElementById('questions');
       qDiv.classList.remove('hidden');
       const newEntry = document.createElement('div');
       newEntry.innerHTML = `<strong>${teamName}:</strong> "${questionText}" → <em>${answer}</em>`;
       qDiv.appendChild(newEntry);
-
-      // Disable this team's input
       document.getElementById('question-input').value = '';
       document.getElementById('question-input').disabled = true;
       document.getElementById('answer-yes').disabled = true;
       document.getElementById('answer-no').disabled = true;
-
       if (questionCount < maxQuestions) {
         setTimeout(() => {
           currentGroupIndex++;
@@ -438,7 +413,6 @@
       document.getElementById('current-team').textContent = teamName;
     }
 
-    // —— 5) Show Guess Entry Section —— 
     function showGuessSection() {
       document.getElementById('question-section').classList.add('hidden');
       document.getElementById('guess-section').classList.remove('hidden');
@@ -449,15 +423,12 @@
       const tbody = document.getElementById('guess-table-body');
       tbody.innerHTML = '';
       guessStates = {};
-
       groups.forEach((teamName, idx) => {
         const tr = document.createElement('tr');
-        // Team cell
         const tdTeam = document.createElement('td');
         tdTeam.textContent = teamName;
         tdTeam.classList.add('text-gray-700');
         tr.appendChild(tdTeam);
-        // Guess input cell
         const tdGuess = document.createElement('td');
         const input = document.createElement('input');
         input.type = 'text';
@@ -466,13 +437,10 @@
         tdGuess.appendChild(input);
         tr.appendChild(tdGuess);
         tbody.appendChild(tr);
-
-        // Initialize guessStates
         guessStates[idx] = { guess: '', correct: null };
       });
     }
 
-    // —— 6) Submit All Guesses → Show Mark Screen —— 
     document.getElementById('submit-guesses').addEventListener('click', () => {
       const inputs = document.querySelectorAll('#guess-table-body input');
       inputs.forEach((inp) => {
@@ -483,27 +451,21 @@
       showMarkScreen();
     });
 
-    // —— 7) Show Mark Answers Phase —— 
     function showMarkScreen() {
       document.getElementById('guess-section').classList.add('hidden');
       document.getElementById('mark-screen').classList.remove('hidden');
-
       const tbody = document.getElementById('mark-table-body');
       tbody.innerHTML = '';
-
       groups.forEach((teamName, idx) => {
         const tr = document.createElement('tr');
-        // Team cell
         const tdTeam = document.createElement('td');
         tdTeam.textContent = teamName;
         tdTeam.classList.add('text-gray-700');
         tr.appendChild(tdTeam);
-        // Guess cell
         const tdGuess = document.createElement('td');
         tdGuess.textContent = guessStates[idx].guess;
         tdGuess.classList.add('text-gray-700');
         tr.appendChild(tdGuess);
-        // Mark buttons cell
         const tdMark = document.createElement('td');
         tdMark.classList.add('flex', 'gap-4');
         const btnCorrect = document.createElement('button');
@@ -517,34 +479,25 @@
         tdMark.appendChild(btnCorrect);
         tdMark.appendChild(btnIncorrect);
         tr.appendChild(tdMark);
-
         tbody.appendChild(tr);
-
-        // Event listeners for mark buttons
         btnCorrect.addEventListener('click', () => markAnswer(idx, true, btnCorrect, btnIncorrect));
         btnIncorrect.addEventListener('click', () => markAnswer(idx, false, btnCorrect, btnIncorrect));
       });
     }
 
-    // Handle marking a single team's answer
     function markAnswer(idx, isCorrect, btnCorrect, btnIncorrect) {
       guessStates[idx].correct = isCorrect;
-      // Disable both buttons once marked
       btnCorrect.disabled = true;
       btnIncorrect.disabled = true;
       btnCorrect.style.opacity = '0.6';
       btnIncorrect.style.opacity = '0.6';
-
-      // Check if all teams have been marked
       const allMarked = Object.values(guessStates).every(gs => gs.correct !== null);
       if (allMarked) {
         document.getElementById('finalize-round').classList.remove('hidden');
       }
     }
 
-    // —— 8) Finalize Round: Update Scores & Show Round Controls —— 
     document.getElementById('finalize-round').addEventListener('click', () => {
-      // Award 1 point for each correct guess
       Object.entries(guessStates).forEach(([idxStr, gs]) => {
         const idx = parseInt(idxStr, 10);
         if (gs.correct) {
@@ -553,18 +506,14 @@
         }
       });
       renderScoreBoard();
-      // Hide mark screen, show next-round/end-game
       document.getElementById('mark-screen').classList.add('hidden');
       document.getElementById('finalize-round').classList.add('hidden');
       document.getElementById('round-controls').classList.remove('hidden');
     });
 
-    // —— 9) Next Round: Prepare for New Round —— 
     document.getElementById('next-round').addEventListener('click', () => {
       currentRound++;
       document.getElementById('current-round').textContent = `Round: ${currentRound}`;
-
-      // Clear previous round data
       document.getElementById('hints-display').classList.add('hidden');
       document.getElementById('questions').innerHTML = '';
       document.getElementById('questions').classList.add('hidden');
@@ -573,32 +522,25 @@
       document.getElementById('question-input').value = '';
       questionCount = 0;
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
-
-      // Hide round-controls, show hint-phase
       document.getElementById('round-controls').classList.add('hidden');
       document.getElementById('hint-section').classList.remove('hidden');
     });
 
-    // —— 10) End Game: Show Winner Screen with Confetti —— 
     document.getElementById('end-game').addEventListener('click', () => {
-      // Determine top score and winner(s)
+      console.log('End Game button clicked');
       const maxPts = Math.max(...groups.map(t => scores[t]));
       const winners = groups.filter(t => scores[t] === maxPts);
       const winnerText = winners.length === 1
         ? `Winner: ${winners[0]}`
         : `Winners: ${winners.join(', ')}`;
-
-      // Show celebration screen
       document.getElementById('game-section').classList.add('hidden');
       document.getElementById('celebration-screen').classList.remove('hidden');
       document.getElementById('winner-name').textContent = winnerText;
-
       launchConfetti('confetti-canvas');
     });
 
-    // —— 11) Restart Game: Reset All State —— 
     document.getElementById('restart-game').addEventListener('click', () => {
-      // Reset globals
+      console.log('Restart Game button clicked');
       groups = [];
       currentRound = 1;
       questionCount = 0;
@@ -608,8 +550,6 @@
       maxQuestions = 0;
       questionsList = [];
       guessStates = {};
-
-      // Reset UI
       document.getElementById('celebration-screen').classList.add('hidden');
       document.getElementById('setup-section').classList.remove('hidden');
       document.getElementById('game-section').classList.add('hidden');
@@ -628,20 +568,21 @@
       document.getElementById('question-input').value = '';
       document.getElementById('finalize-round').classList.add('hidden');
       document.getElementById('round-controls').classList.add('hidden');
-
-      // Re-generate group input row
       document.getElementById('num-groups').dispatchEvent(new Event('input'));
     });
 
-    // —— 12) Render Score Board (Game State) —— 
     function renderScoreBoard() {
       const scoresDiv = document.getElementById('scores');
       scoresDiv.innerHTML = '';
+      if (!groups || groups.length === 0) {
+        console.warn('No groups defined for scoreboard');
+        return;
+      }
       groups.forEach((teamName, idx) => {
         const card = document.createElement('div');
         card.classList.add('score-card');
         card.style.setProperty('--index', idx);
-        const pts = scores[teamName];
+        const pts = scores[teamName] || 0;
         card.innerHTML = `
           <div class="text-lg font-bold">${teamName}</div>
           <div>Points: ${pts}</div>
@@ -650,10 +591,19 @@
       });
     }
 
-    // —— 13) Confetti Launch —— 
     function launchConfetti(canvasId) {
       const canvas = document.getElementById(canvasId);
+      if (!canvas) {
+        console.error('Confetti canvas not found');
+        return;
+      }
       const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error('Failed to get canvas context');
+        return;
+      }
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
       let particles = [];
       const colors = ['#f44336','#e91e63','#9c27b0','#2196f3','#4caf50','#ffeb3b','#ff9800'];
       for (let i = 0; i < 150; i++) {
@@ -680,8 +630,6 @@
         });
         requestAnimationFrame(draw);
       }
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
       draw();
     }
   </script>
