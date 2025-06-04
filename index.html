@@ -121,7 +121,9 @@
     .text-4xl { font-size: 36px; }
     .font-bold { font-weight: bold; }
     .text-center { text-align: center; }
-    .hidden { display: none !important; } /* Added !important to prevent overrides */
+    .hidden { display: none !important; } /* Prevent accidental overrides */
+
+    /* Celebration / Winner Screen */
     .celebration-screen {
       position: fixed;
       top: 0;
@@ -166,11 +168,58 @@
       pointer-events: none;
       z-index: 11;
     }
+
+    /* Pop Quiz Screen (Between Rounds) */
+    .popquiz-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .popquiz-card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      border: 4px solid #0d9488;
+      width: 360px;
+    }
+    .popquiz-card h3 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: #4f46e5;
+    }
+    .popquiz-card .timer {
+      font-size: 36px;
+      color: #db2777;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    .popquiz-card #popquiz-question, 
+    .popquiz-card #popquiz-answer {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #374151;
+    }
+    .popquiz-card button {
+      margin: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container section">
     <h1 class="text-4xl font-bold text-center mb-6">Guess in Ten Scorekeeper 🧠</h1>
+
+    <!-- Setup Section -->
     <div id="setup-section" class="mb-4">
       <h2 class="text-2xl font-bold text-teal-600 mb-4">Game Setup</h2>
       <div class="flex flex-col gap-4 bg-gray-100">
@@ -184,8 +233,13 @@
         <button id="start-game" class="btn bg-cyan-500">Start Game 🚀</button>
       </div>
     </div>
+
+    <!-- Main Game Section -->
     <div id="game-section" class="hidden">
+      <!-- Hints Display -->
       <div id="hints-display" class="hints-display hidden"></div>
+
+      <!-- Hint Input Phase -->
       <div id="hint-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Round Setup</h2>
         <div class="flex flex-col gap-4 bg-gray-100">
@@ -194,7 +248,11 @@
           <button id="set-hints" class="btn bg-lime-500">Set Hints ✨</button>
         </div>
       </div>
+
+      <!-- Questions History -->
       <div id="questions" class="questions-list hidden"></div>
+
+      <!-- Question-Asking Phase -->
       <div id="question-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Ask a Question</h2>
         <p id="current-team" class="text-4xl text-pink-600 font-bold text-center mb-6"></p>
@@ -206,6 +264,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Guess Entry Phase -->
       <div id="guess-section" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Enter Team Guesses</h2>
         <div class="bg-gray-100">
@@ -221,6 +281,8 @@
           <button id="submit-guesses" class="btn bg-cyan-500 mt-4">Submit All Guesses 🚀</button>
         </div>
       </div>
+
+      <!-- Mark Answers Phase -->
       <div id="mark-screen" class="mb-4 hidden">
         <h2 class="text-2xl font-bold text-teal-600 mb-4 text-center">Mark Answers</h2>
         <div class="bg-gray-100">
@@ -237,10 +299,14 @@
           <button id="finalize-round" class="btn bg-cyan-500 hidden">Finalize Round 🚀</button>
         </div>
       </div>
+
+      <!-- Round Controls: Next Round or End Game -->
       <div id="round-controls" class="mb-4 hidden">
         <button id="next-round" class="btn bg-lime-500 mr-4">Next Round 🕒</button>
         <button id="end-game" class="btn bg-pink-500">End Game 🛑</button>
       </div>
+
+      <!-- Game State & Scores (always visible) -->
       <div class="mb-4">
         <h2 class="text-2xl font-bold text-teal-600 mb-4">Game State</h2>
         <div class="bg-gray-100 p-4 rounded-lg">
@@ -250,6 +316,24 @@
         </div>
       </div>
     </div>
+
+    <!-- Pop Quiz Screen (Between Rounds) -->
+    <div id="popquiz-screen" class="popquiz-screen hidden">
+      <canvas id="popquiz-confetti-canvas"></canvas>
+      <div class="popquiz-card">
+        <h3>Pop Quiz: <span id="popquiz-team" class="text-lime-600"></span></h3>
+        <div id="popquiz-question">Question text here</div>
+        <div id="popquiz-timer" class="timer">15</div>
+        <button id="popquiz-show-answer" class="btn bg-cyan-500 hidden">Show Answer 🔍</button>
+        <div id="popquiz-answer" class="hidden"></div>
+        <div id="popquiz-mark" class="hidden">
+          <button id="popquiz-correct" class="btn bg-lime-500">Correct ✅</button>
+          <button id="popquiz-incorrect" class="btn bg-pink-500">Incorrect ❌</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration / Winner Screen -->
     <div id="celebration-screen" class="celebration-screen hidden">
       <canvas id="confetti-canvas"></canvas>
       <div class="celebration-card">
@@ -259,7 +343,9 @@
       </div>
     </div>
   </div>
+
   <script>
+    // —— Global Variables —— 
     let groups = [];
     let currentRound = 1;
     let questionCount = 0;
@@ -270,20 +356,69 @@
     let questionsList = [];
     let guessStates = {};
 
+    // Pop Quiz data:
+    let popquizQuestions = [
+      { q: "Who is the rapper of the hit song “SkeeYee” (2024)?", a: "Sexyy Red" },
+      { q: "Which TikTok dance challenge goes by “Jiggy” that was viral in 2024?", a: "Capsa (Jiggy Challenge)" },
+      { q: "In 2024, who voiced Miles Morales in the latest “Spider-Man” movie?", a: "Shameik Moore" },
+      { q: "Which artist released the 2024 single “Super Gremlin”?", a: "Kodak Black" },
+      { q: "What is the name of the animated series set in Chicago on Prime Video (2024)?", a: "Blindspotting" },
+      { q: "Which YouTuber is known for “ASMR” and is Black, with over 10M subscribers by 2024?", a: "ASMR Darling" },
+      { q: "Name the popular video game sequel released in 2024 by 343 Industries.", a: "Halo Infinite" },
+      { q: "What fashion brand collaborated with Lil Nas X for a 2024 sneaker drop?", a: "Nike Air Force 1" },
+      { q: "Which Disney+ series has an African American family living in Chicago (2024)?", a: "Saturdays" },
+      { q: "Which singer released “Hrs & Hrs” that topped charts in 2023?", a: "Muni Long" },
+      { q: "What streaming platform released “Swarm” with Donald Glover in 2024?", a: "Amazon Prime Video" },
+      { q: "Who starred as Aunt Viv in the 2024 reboot of “Bel-Air”?", a: "Cassandra Freeman" },
+      { q: "Which TikTok duo created the “Railroad Track” dance challenge in 2023?", a: "Inner Circle" },
+      { q: "Name the 2024 movie where Halle Bailey plays a superhero in Marvel.", a: "The Little Mermaid" },
+      { q: "Which rapper’s 2023 album “Vulture Island” was trending in Chicago schools?", a: "Lil Yachty" },
+      { q: "What is the name of the popular Netflix series about a music manager (2024)?", a: "BMF" },
+      { q: "Who is the youngest Black author to top the NYT bestseller list in 2024?", a: "Elizabeth Acevedo" },
+      { q: "Which sneaker collaboration with Travis Scott dropped in Chicago in 2024?", a: "Jordan 1 Retro Low OG 'Chicago'" },
+      { q: "Which artist’s 2024 hit “Quit Playing Games” was viral on Instagram Reels?", a: "PinkPantheress" },
+      { q: "What HBO series revival featuring Black characters aired in 2024?", a: "The Wire: Legacy" },
+      { q: "Which pop star sang the 2024 NBA All-Star Game halftime show?", a: "SZA" },
+      { q: "Name the 2023 video game featuring Miles Morales Spider-Man.", a: "Marvel’s Spider-Man 2" },
+      { q: "Which rapper from Chicago released “Back in Blood” in 2023?", a: "Pooh Shiesty" },
+      { q: "Which Disney Channel show about skateboarding is popular in 2024?", a: "Rude Awakening" },
+      { q: "What is the name of the viral prankster YouTuber from Chicago (2023)?", a: "The Habibi Bros" },
+      { q: "Which Netflix special by Kevin Hart dropped in 2023?", a: "Zero F**ks Given" },
+      { q: "Which 2024 Marvel series on Disney+ features Riri Williams (Ironheart)?", a: "Ironheart" },
+      { q: "Which artist released “Escapism.” in 2023 and went viral on TikTok?", a: "RAYE" },
+      { q: "Name the Disney+ documentary about a Black Chicago rapper (2024).", a: "Bye Bye Tidal" },
+      { q: "Which mobile app was trending for learning dance moves in 2024?", a: "Triller" },
+      { q: "Which TikTok gamer from Chicago streams Fortnite in 2024?", a: "BigChillPanda" },
+      { q: "Which 2023 HBO show features Chicago high school football?", a: "Winning Time" },
+      { q: "Which rapper’s “Mr. Morale & The Big Steppers” was released in 2022?", a: "Kendrick Lamar" },
+      { q: "What 2024 movie stars Regé-Jean Page as a dancer in Chicago?", a: "Cinderella" },
+      { q: "Which 2024 album by Drake was anticipated by West Side students?", a: "For All the Dogs" },
+      { q: "What social media trend in 2024 involves “Reading Comments” with a twist?", a: "Karol G’s '9 Kiss' trend" },
+      { q: "Which streaming show about a Black girl band aired in 2023?", a: "Grown-ish" },
+      { q: "Which rapper’s real name is Bryson Tiller, popular in Chicago in 2024?", a: "Bryson Tiller (Trapsoul)" },
+      { q: "Name the 2024 movie where John Boyega stars as a superhero.", a: "They Cloned Tyrone" },
+      { q: "Which 2023 song by Latto went viral on Instagram Reels?", a: "Put It on Da Floor Again" },
+      { q: "Which Disney+ short film features an African American family in Chicago (2024)?", a: "Curtindale" },
+      { q: "Which Black animator’s 2023 cartoon “The Proud Family” reboot is on Disney+?", a: "Bruce W. Smith" }
+    ];
+    let currentPopIdx = null;
+    let currentTeamIdx = null;
+    let popTimerId = null;
+    let popTimeLeft = 15;
+
+    // —— Ensure Celebration & Game Sections Are Hidden on Load —— 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('DOMContentLoaded: Ensuring celebration screen is hidden');
-      const celebrationScreen = document.getElementById('celebration-screen');
-      if (!celebrationScreen.classList.contains('hidden')) {
-        celebrationScreen.classList.add('hidden');
-        console.log('Added hidden class to celebration-screen');
-      }
+      console.log('DOM Loaded: Hiding celebration, game, popquiz');
+      document.getElementById('celebration-screen').classList.add('hidden');
       document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('popquiz-screen').classList.add('hidden');
     });
 
     function playSound(soundId) {
       console.log(`Playing sound: ${soundId}`);
     }
 
+    // —— 1) Generate Group Name Inputs —— 
     document.getElementById('num-groups').addEventListener('input', (e) => {
       const num = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
       const groupNamesDiv = document.getElementById('group-names');
@@ -297,42 +432,40 @@
     });
     document.getElementById('num-groups').dispatchEvent(new Event('input'));
 
+    // —— 2) Start Game: Read Groups, Init State, Show Hint Phase —— 
     document.getElementById('start-game').addEventListener('click', (e) => {
       e.preventDefault();
       console.log('Start Game clicked');
-      const numGroupsInput = document.getElementById('num-groups');
-      let count = parseInt(numGroupsInput.value) || 1;
+      let count = parseInt(document.getElementById('num-groups').value) || 1;
       count = Math.min(Math.max(count, 1), 10);
+
       groups = [];
       scores = {};
-      try {
-        for (let i = 0; i < count; i++) {
-          const nameInput = document.getElementById(`group-name-${i}`);
-          if (!nameInput) {
-            console.error(`Group name input for index ${i} not found`);
-            alert('Please ensure all group name inputs are available.');
-            return;
-          }
-          const teamName = nameInput.value.trim() || `Team ${i + 1}`;
-          groups.push(teamName);
-          scores[teamName] = 0;
+      for (let i = 0; i < count; i++) {
+        const nameInput = document.getElementById(`group-name-${i}`);
+        if (!nameInput) {
+          console.error(`Group name input for index ${i} not found`);
+          alert('Please ensure all group name inputs are available.');
+          return;
         }
-      } catch (e) {
-        console.error('Error initializing groups:', e);
-        alert('Error initializing groups. Please try again.');
-        return;
+        const teamName = nameInput.value.trim() || `Team ${i + 1}`;
+        groups.push(teamName);
+        scores[teamName] = 0;
       }
+
       maxQuestions = groups.length;
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
       guessStates = {};
+
       console.log('Hiding setup-section');
       document.getElementById('setup-section').classList.add('hidden');
       console.log('Showing game-section');
       document.getElementById('game-section').classList.remove('hidden');
       console.log('Showing hint-section');
       document.getElementById('hint-section').classList.remove('hidden');
+
       document.getElementById('hints-display').classList.add('hidden');
       document.getElementById('questions').innerHTML = '';
       document.getElementById('questions').classList.add('hidden');
@@ -341,15 +474,18 @@
       document.getElementById('mark-screen').classList.add('hidden');
       document.getElementById('round-controls').classList.add('hidden');
       document.getElementById('celebration-screen').classList.add('hidden');
+      document.getElementById('popquiz-screen').classList.add('hidden');
+
       document.getElementById('current-round').textContent = `Round: ${currentRound}`;
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
       try {
         renderScoreBoard();
-      } catch (e) {
-        console.error('Error rendering scoreboard:', e);
+      } catch (err) {
+        console.error('Error rendering scoreboard:', err);
       }
     });
 
+    // —— 3) After Hints Are Set: Show Question-Asking Phase —— 
     document.getElementById('set-hints').addEventListener('click', () => {
       const h1 = document.getElementById('hint1').value.trim();
       const h2 = document.getElementById('hint2').value.trim();
@@ -357,8 +493,10 @@
       const hintsDiv = document.getElementById('hints-display');
       hintsDiv.textContent = `Hints: ${h1} … ${h2}`;
       hintsDiv.classList.remove('hidden');
+
       document.getElementById('hint-section').classList.add('hidden');
       document.getElementById('question-section').classList.remove('hidden');
+
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
@@ -366,11 +504,13 @@
       document.getElementById('questions').classList.add('hidden');
       document.getElementById('question-count').textContent = `Questions Asked: 0 / ${maxQuestions}`;
       updateCurrentTeamDisplay();
+
       document.getElementById('question-input').disabled = false;
       document.getElementById('answer-yes').disabled = false;
       document.getElementById('answer-no').disabled = false;
     });
 
+    // —— 4) Yes / No Answer Handlers —— 
     document.getElementById('answer-yes').addEventListener('click', () => {
       handleYesNoAnswer('Yes');
     });
@@ -381,18 +521,21 @@
     function handleYesNoAnswer(answer) {
       const teamName = groups[currentGroupIndex];
       const questionText = document.getElementById('question-input').value.trim() || '(no question)';
-      questionsList.push({ team: teamName, question: questionText, answer: answer });
+      questionsList.push({ team: teamName, question: questionText, answer });
       questionCount++;
       document.getElementById('question-count').textContent = `Questions Asked: ${questionCount} / ${maxQuestions}`;
+
       const qDiv = document.getElementById('questions');
       qDiv.classList.remove('hidden');
       const newEntry = document.createElement('div');
       newEntry.innerHTML = `<strong>${teamName}:</strong> "${questionText}" → <em>${answer}</em>`;
       qDiv.appendChild(newEntry);
+
       document.getElementById('question-input').value = '';
       document.getElementById('question-input').disabled = true;
       document.getElementById('answer-yes').disabled = true;
       document.getElementById('answer-no').disabled = true;
+
       if (questionCount < maxQuestions) {
         setTimeout(() => {
           currentGroupIndex++;
@@ -413,6 +556,7 @@
       document.getElementById('current-team').textContent = teamName;
     }
 
+    // —— 5) Show Guess Entry Section —— 
     function showGuessSection() {
       document.getElementById('question-section').classList.add('hidden');
       document.getElementById('guess-section').classList.remove('hidden');
@@ -441,6 +585,7 @@
       });
     }
 
+    // —— 6) Submit All Guesses → Show Mark Screen —— 
     document.getElementById('submit-guesses').addEventListener('click', () => {
       const inputs = document.querySelectorAll('#guess-table-body input');
       inputs.forEach((inp) => {
@@ -454,6 +599,7 @@
     function showMarkScreen() {
       document.getElementById('guess-section').classList.add('hidden');
       document.getElementById('mark-screen').classList.remove('hidden');
+
       const tbody = document.getElementById('mark-table-body');
       tbody.innerHTML = '';
       groups.forEach((teamName, idx) => {
@@ -480,6 +626,7 @@
         tdMark.appendChild(btnIncorrect);
         tr.appendChild(tdMark);
         tbody.appendChild(tr);
+
         btnCorrect.addEventListener('click', () => markAnswer(idx, true, btnCorrect, btnIncorrect));
         btnIncorrect.addEventListener('click', () => markAnswer(idx, false, btnCorrect, btnIncorrect));
       });
@@ -491,12 +638,14 @@
       btnIncorrect.disabled = true;
       btnCorrect.style.opacity = '0.6';
       btnIncorrect.style.opacity = '0.6';
+
       const allMarked = Object.values(guessStates).every(gs => gs.correct !== null);
       if (allMarked) {
         document.getElementById('finalize-round').classList.remove('hidden');
       }
     }
 
+    // —— 7) Finalize Round: Update Scores & Trigger Pop Quiz —— 
     document.getElementById('finalize-round').addEventListener('click', () => {
       Object.entries(guessStates).forEach(([idxStr, gs]) => {
         const idx = parseInt(idxStr, 10);
@@ -508,9 +657,77 @@
       renderScoreBoard();
       document.getElementById('mark-screen').classList.add('hidden');
       document.getElementById('finalize-round').classList.add('hidden');
-      document.getElementById('round-controls').classList.remove('hidden');
+
+      // Instead of showing round-controls right away, launch the pop quiz
+      startPopQuiz();
     });
 
+    // —— 8) Pop Quiz Logic (Between Rounds) —— 
+    function startPopQuiz() {
+      // Choose a random team index
+      currentTeamIdx = Math.floor(Math.random() * groups.length);
+      const teamName = groups[currentTeamIdx];
+      document.getElementById('popquiz-team').textContent = teamName;
+
+      // Choose a random question
+      currentPopIdx = Math.floor(Math.random() * popquizQuestions.length);
+      const questionObj = popquizQuestions[currentPopIdx];
+      document.getElementById('popquiz-question').textContent = questionObj.q;
+
+      // Reset timer & UI
+      popTimeLeft = 15;
+      document.getElementById('popquiz-timer').textContent = popTimeLeft;
+      document.getElementById('popquiz-show-answer').classList.add('hidden');
+      document.getElementById('popquiz-answer').classList.add('hidden');
+      document.getElementById('popquiz-mark').classList.add('hidden');
+
+      // Show popquiz screen
+      document.getElementById('popquiz-screen').classList.remove('hidden');
+
+      // Start countdown
+      popTimerId = setInterval(() => {
+        popTimeLeft--;
+        if (popTimeLeft >= 0) {
+          document.getElementById('popquiz-timer').textContent = popTimeLeft;
+        }
+        if (popTimeLeft === 0) {
+          clearInterval(popTimerId);
+          document.getElementById('popquiz-timer').textContent = "Time's Up!";
+          // Now allow showing the answer
+          document.getElementById('popquiz-show-answer').classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    // Show answer when clicked
+    document.getElementById('popquiz-show-answer').addEventListener('click', () => {
+      const answer = popquizQuestions[currentPopIdx].a;
+      const answerDiv = document.getElementById('popquiz-answer');
+      answerDiv.textContent = `Answer: ${answer}`;
+      answerDiv.classList.remove('hidden');
+      document.getElementById('popquiz-show-answer').classList.add('hidden');
+      document.getElementById('popquiz-mark').classList.remove('hidden');
+    });
+
+    // If marked correct, award 1 point; if incorrect, no point. Then hide popquiz and show round-controls
+    document.getElementById('popquiz-correct').addEventListener('click', () => {
+      const teamName = groups[currentTeamIdx];
+      scores[teamName] += 1;
+      renderScoreBoard();
+      endPopQuiz();
+    });
+    document.getElementById('popquiz-incorrect').addEventListener('click', () => {
+      endPopQuiz();
+    });
+
+    function endPopQuiz() {
+      clearInterval(popTimerId);
+      document.getElementById('popquiz-screen').classList.add('hidden');
+      // Now show the normal round-controls (Next Round / End Game)
+      document.getElementById('round-controls').classList.remove('hidden');
+    }
+
+    // —— 9) Next Round: Prepare for New Round —— 
     document.getElementById('next-round').addEventListener('click', () => {
       currentRound++;
       document.getElementById('current-round').textContent = `Round: ${currentRound}`;
@@ -526,6 +743,7 @@
       document.getElementById('hint-section').classList.remove('hidden');
     });
 
+    // —— 10) End Game: Show Winner Screen with Confetti —— 
     document.getElementById('end-game').addEventListener('click', () => {
       console.log('End Game button clicked');
       const maxPts = Math.max(...groups.map(t => scores[t]));
@@ -533,12 +751,15 @@
       const winnerText = winners.length === 1
         ? `Winner: ${winners[0]}`
         : `Winners: ${winners.join(', ')}`;
+
       document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('popquiz-screen').classList.add('hidden');
       document.getElementById('celebration-screen').classList.remove('hidden');
       document.getElementById('winner-name').textContent = winnerText;
       launchConfetti('confetti-canvas');
     });
 
+    // —— 11) Restart Game: Reset All State —— 
     document.getElementById('restart-game').addEventListener('click', () => {
       console.log('Restart Game button clicked');
       groups = [];
@@ -550,6 +771,7 @@
       maxQuestions = 0;
       questionsList = [];
       guessStates = {};
+
       document.getElementById('celebration-screen').classList.add('hidden');
       document.getElementById('setup-section').classList.remove('hidden');
       document.getElementById('game-section').classList.add('hidden');
@@ -568,9 +790,11 @@
       document.getElementById('question-input').value = '';
       document.getElementById('finalize-round').classList.add('hidden');
       document.getElementById('round-controls').classList.add('hidden');
+
       document.getElementById('num-groups').dispatchEvent(new Event('input'));
     });
 
+    // —— 12) Render Score Board (Game State) —— 
     function renderScoreBoard() {
       const scoresDiv = document.getElementById('scores');
       scoresDiv.innerHTML = '';
@@ -591,6 +815,7 @@
       });
     }
 
+    // —— 13) Confetti Launch —— 
     function launchConfetti(canvasId) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) {
