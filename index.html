@@ -317,7 +317,7 @@
       </div>
     </div>
 
-    <!-- Pop Quiz Screen (Between Rounds) -->
+    <!-- Pop Quiz (U.S. History) Screen (Between Rounds) -->
     <div id="popquiz-screen" class="popquiz-screen hidden">
       <canvas id="popquiz-confetti-canvas"></canvas>
       <div class="popquiz-card">
@@ -356,57 +356,56 @@
     let questionsList = [];
     let guessStates = {};
 
-    // Pop Quiz data:
-    let popquizQuestions = [
-      { q: "Who is the rapper of the hit song “SkeeYee” (2024)?", a: "Sexyy Red" },
-      { q: "Which TikTok dance challenge goes by “Jiggy” that was viral in 2024?", a: "Capsa (Jiggy Challenge)" },
-      { q: "In 2024, who voiced Miles Morales in the latest “Spider-Man” movie?", a: "Shameik Moore" },
-      { q: "Which artist released the 2024 single “Super Gremlin”?", a: "Kodak Black" },
-      { q: "What is the name of the animated series set in Chicago on Prime Video (2024)?", a: "Blindspotting" },
-      { q: "Which YouTuber is known for “ASMR” and is Black, with over 10M subscribers by 2024?", a: "ASMR Darling" },
-      { q: "Name the popular video game sequel released in 2024 by 343 Industries.", a: "Halo Infinite" },
-      { q: "What fashion brand collaborated with Lil Nas X for a 2024 sneaker drop?", a: "Nike Air Force 1" },
-      { q: "Which Disney+ series has an African American family living in Chicago (2024)?", a: "Saturdays" },
-      { q: "Which singer released “Hrs & Hrs” that topped charts in 2023?", a: "Muni Long" },
-      { q: "What streaming platform released “Swarm” with Donald Glover in 2024?", a: "Amazon Prime Video" },
-      { q: "Who starred as Aunt Viv in the 2024 reboot of “Bel-Air”?", a: "Cassandra Freeman" },
-      { q: "Which TikTok duo created the “Railroad Track” dance challenge in 2023?", a: "Inner Circle" },
-      { q: "Name the 2024 movie where Halle Bailey plays a superhero in Marvel.", a: "The Little Mermaid" },
-      { q: "Which rapper’s 2023 album “Vulture Island” was trending in Chicago schools?", a: "Lil Yachty" },
-      { q: "What is the name of the popular Netflix series about a music manager (2024)?", a: "BMF" },
-      { q: "Who is the youngest Black author to top the NYT bestseller list in 2024?", a: "Elizabeth Acevedo" },
-      { q: "Which sneaker collaboration with Travis Scott dropped in Chicago in 2024?", a: "Jordan 1 Retro Low OG 'Chicago'" },
-      { q: "Which artist’s 2024 hit “Quit Playing Games” was viral on Instagram Reels?", a: "PinkPantheress" },
-      { q: "What HBO series revival featuring Black characters aired in 2024?", a: "The Wire: Legacy" },
-      { q: "Which pop star sang the 2024 NBA All-Star Game halftime show?", a: "SZA" },
-      { q: "Name the 2023 video game featuring Miles Morales Spider-Man.", a: "Marvel’s Spider-Man 2" },
-      { q: "Which rapper from Chicago released “Back in Blood” in 2023?", a: "Pooh Shiesty" },
-      { q: "Which Disney Channel show about skateboarding is popular in 2024?", a: "Rude Awakening" },
-      { q: "What is the name of the viral prankster YouTuber from Chicago (2023)?", a: "The Habibi Bros" },
-      { q: "Which Netflix special by Kevin Hart dropped in 2023?", a: "Zero F**ks Given" },
-      { q: "Which 2024 Marvel series on Disney+ features Riri Williams (Ironheart)?", a: "Ironheart" },
-      { q: "Which artist released “Escapism.” in 2023 and went viral on TikTok?", a: "RAYE" },
-      { q: "Name the Disney+ documentary about a Black Chicago rapper (2024).", a: "Bye Bye Tidal" },
-      { q: "Which mobile app was trending for learning dance moves in 2024?", a: "Triller" },
-      { q: "Which TikTok gamer from Chicago streams Fortnite in 2024?", a: "BigChillPanda" },
-      { q: "Which 2023 HBO show features Chicago high school football?", a: "Winning Time" },
-      { q: "Which rapper’s “Mr. Morale & The Big Steppers” was released in 2022?", a: "Kendrick Lamar" },
-      { q: "What 2024 movie stars Regé-Jean Page as a dancer in Chicago?", a: "Cinderella" },
-      { q: "Which 2024 album by Drake was anticipated by West Side students?", a: "For All the Dogs" },
-      { q: "What social media trend in 2024 involves “Reading Comments” with a twist?", a: "Karol G’s '9 Kiss' trend" },
-      { q: "Which streaming show about a Black girl band aired in 2023?", a: "Grown-ish" },
-      { q: "Which rapper’s real name is Bryson Tiller, popular in Chicago in 2024?", a: "Bryson Tiller (Trapsoul)" },
-      { q: "Name the 2024 movie where John Boyega stars as a superhero.", a: "They Cloned Tyrone" },
-      { q: "Which 2023 song by Latto went viral on Instagram Reels?", a: "Put It on Da Floor Again" },
-      { q: "Which Disney+ short film features an African American family in Chicago (2024)?", a: "Curtindale" },
-      { q: "Which Black animator’s 2023 cartoon “The Proud Family” reboot is on Disney+?", a: "Bruce W. Smith" }
+    // Pop Quiz: 40 U.S. History Questions (5th Grade Level)
+    const popquizQuestions = [
+      { q: "Who was the first President of the United States?", a: "George Washington" },
+      { q: "In what year did the United States declare independence?", a: "1776" },
+      { q: "What document begins with “We the People”?", a: "The Constitution" },
+      { q: "Who wrote the Declaration of Independence?", a: "Thomas Jefferson" },
+      { q: "What holiday celebrates the signing of the Declaration of Independence?", a: "July 4th (Independence Day)" },
+      { q: "Which war was fought between the North and South in the United States?", a: "The Civil War" },
+      { q: "Who was president during the Civil War?", a: "Abraham Lincoln" },
+      { q: "What was the name of the ship that carried the Pilgrims to America in 1620?", a: "The Mayflower" },
+      { q: "What was the first permanent English settlement in America?", a: "Jamestown" },
+      { q: "What was the name of the path used by pioneers to travel west?", a: "The Oregon Trail" },
+      { q: "What purchase in 1803 doubled the size of the United States?", a: "The Louisiana Purchase" },
+      { q: "Who led the Lewis and Clark expedition?", a: "Meriwether Lewis and William Clark" },
+      { q: "Who was the Native American woman who guided Lewis and Clark?", a: "Sacagawea" },
+      { q: "What was the Cotton Gin and who invented it?", a: "A machine that separated cotton seeds, invented by Eli Whitney" },
+      { q: "Which president purchased Alaska from Russia?", a: "Thomas Jefferson or correct: Thomas Jefferson was third President, but Alaska was purchased by President Abraham Lincoln's Secretary of State William H. Seward in 1867 (Seward’s Folly)." },
+      { q: "What was the Underground Railroad used for?", a: "Helping enslaved people escape to freedom" },
+      { q: "Who was a famous conductor on the Underground Railroad?", a: "Harriet Tubman" },
+      { q: "What did the Emancipation Proclamation do?", a: "Freed enslaved people in Confederate states" },
+      { q: "Which amendment protects freedom of speech?", a: "First Amendment" },
+      { q: "What is the capital of the United States?", a: "Washington, D.C." },
+      { q: "What is the name of the national anthem of the United States?", a: "The Star-Spangled Banner" },
+      { q: "Who wrote the Star-Spangled Banner?", a: "Francis Scott Key" },
+      { q: "What was the War of 1812 fought between?", a: "The United States and Great Britain" },
+      { q: "Who was the president during World War I?", a: "Woodrow Wilson" },
+      { q: "Who was the president during the Great Depression and World War II?", a: "Franklin D. Roosevelt" },
+      { q: "What was the movement to end segregation and gain equal rights for African Americans?", a: "The Civil Rights Movement" },
+      { q: "Who refused to give up her seat on a bus in Montgomery, Alabama?", a: "Rosa Parks" },
+      { q: "Which inventor discovered uses for peanuts and sweet potatoes?", a: "George Washington Carver" },
+      { q: "Who was the famous inventor that improved the light bulb’s filament?", a: "Lewis Latimer" },
+      { q: "What trail brought gold seekers to California in 1849?", a: "The California Gold Rush (49ers) – Trail: the 1849 Trail" },
+      { q: "What was the first successful American airplane called, and who built it?", a: "The Wright Flyer by the Wright brothers" },
+      { q: "What was the Underground Railroad used for?", a: "Helping enslaved people escape to freedom" },
+      { q: "Who made the first telephone call?", a: "Alexander Graham Bell" },
+      { q: "What year did the Boston Tea Party take place?", a: "1773" },
+      { q: "What was the nickname for American soldiers during the Revolutionary War?", a: "Minutemen" },
+      { q: "Who was the leader of the Continental Army during the Revolutionary War?", a: "George Washington" },
+      { q: "Which Native American tribe helped Pilgrims survive their first winter?", a: "The Wampanoag (including Squanto)" },
+      { q: "What line divided free states and slave states before the Civil War?", a: "The Mason-Dixon Line" },
+      { q: "Which state was the last to join the original 13 colonies?", a: "Georgia" },
+      { q: "Who was the first African American to serve on the Supreme Court?", a: "Thurgood Marshall" },
+      { q: "What is the significance of July 4, 1776?", a: "Signing of the Declaration of Independence" }
     ];
     let currentPopIdx = null;
     let currentTeamIdx = null;
     let popTimerId = null;
     let popTimeLeft = 15;
 
-    // —— Ensure Celebration & Game Sections Are Hidden on Load —— 
+    // —— Ensure Celebration & Game & Pop Quiz Sections Are Hidden on Load —— 
     window.addEventListener('DOMContentLoaded', () => {
       console.log('DOM Loaded: Hiding celebration, game, popquiz');
       document.getElementById('celebration-screen').classList.add('hidden');
