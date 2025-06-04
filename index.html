@@ -121,7 +121,7 @@
     .text-4xl { font-size: 36px; }
     .font-bold { font-weight: bold; }
     .text-center { text-align: center; }
-    .hidden { display: none !important; } /* Prevent accidental overrides */
+    .hidden { display: none !important; }
 
     /* Celebration / Winner Screen */
     .celebration-screen {
@@ -372,7 +372,7 @@
       { q: "Who led the Lewis and Clark expedition?", a: "Meriwether Lewis and William Clark" },
       { q: "Who was the Native American woman who guided Lewis and Clark?", a: "Sacagawea" },
       { q: "What was the Cotton Gin and who invented it?", a: "A machine that separated cotton seeds, invented by Eli Whitney" },
-      { q: "Which president purchased Alaska from Russia?", a: "Thomas Jefferson or correct: Thomas Jefferson was third President, but Alaska was purchased by President Abraham Lincoln's Secretary of State William H. Seward in 1867 (Seward’s Folly)." },
+      { q: "Which president purchased Alaska from Russia?", a: "Abraham Lincoln (via Secretary of State William H. Seward)" },
       { q: "What was the Underground Railroad used for?", a: "Helping enslaved people escape to freedom" },
       { q: "Who was a famous conductor on the Underground Railroad?", a: "Harriet Tubman" },
       { q: "What did the Emancipation Proclamation do?", a: "Freed enslaved people in Confederate states" },
@@ -387,9 +387,8 @@
       { q: "Who refused to give up her seat on a bus in Montgomery, Alabama?", a: "Rosa Parks" },
       { q: "Which inventor discovered uses for peanuts and sweet potatoes?", a: "George Washington Carver" },
       { q: "Who was the famous inventor that improved the light bulb’s filament?", a: "Lewis Latimer" },
-      { q: "What trail brought gold seekers to California in 1849?", a: "The California Gold Rush (49ers) – Trail: the 1849 Trail" },
+      { q: "What trail brought gold seekers to California in 1849?", a: "The California Gold Rush" },
       { q: "What was the first successful American airplane called, and who built it?", a: "The Wright Flyer by the Wright brothers" },
-      { q: "What was the Underground Railroad used for?", a: "Helping enslaved people escape to freedom" },
       { q: "Who made the first telephone call?", a: "Alexander Graham Bell" },
       { q: "What year did the Boston Tea Party take place?", a: "1773" },
       { q: "What was the nickname for American soldiers during the Revolutionary War?", a: "Minutemen" },
@@ -398,14 +397,16 @@
       { q: "What line divided free states and slave states before the Civil War?", a: "The Mason-Dixon Line" },
       { q: "Which state was the last to join the original 13 colonies?", a: "Georgia" },
       { q: "Who was the first African American to serve on the Supreme Court?", a: "Thurgood Marshall" },
-      { q: "What is the significance of July 4, 1776?", a: "Signing of the Declaration of Independence" }
+      { q: "What is the significance of July 4, 1776?", a: "Signing of the Declaration of Independence" },
+      { q: "What was the Trail of Tears?", a: "Forced relocation of Native Americans" },
+      { q: "What was the name of the fort attacked on December 7, 1941?", a: "Pearl Harbor" }
     ];
     let currentPopIdx = null;
     let currentTeamIdx = null;
     let popTimerId = null;
     let popTimeLeft = 15;
 
-    // —— Ensure Celebration & Game & Pop Quiz Sections Are Hidden on Load —— 
+    // —— Ensure Celebration, Game & Pop Quiz Are Hidden on Load —— 
     window.addEventListener('DOMContentLoaded', () => {
       console.log('DOM Loaded: Hiding celebration, game, popquiz');
       document.getElementById('celebration-screen').classList.add('hidden');
@@ -452,7 +453,7 @@
         scores[teamName] = 0;
       }
 
-      maxQuestions = groups.length;
+      maxQuestions = groups.length * 2; // Two yes/no questions per team
       questionCount = 0;
       currentGroupIndex = 0;
       questionsList = [];
@@ -537,7 +538,7 @@
 
       if (questionCount < maxQuestions) {
         setTimeout(() => {
-          currentGroupIndex++;
+          currentGroupIndex = (currentGroupIndex + 1) % groups.length;
           updateCurrentTeamDisplay();
           document.getElementById('question-input').disabled = false;
           document.getElementById('answer-yes').disabled = false;
@@ -663,27 +664,22 @@
 
     // —— 8) Pop Quiz Logic (Between Rounds) —— 
     function startPopQuiz() {
-      // Choose a random team index
       currentTeamIdx = Math.floor(Math.random() * groups.length);
       const teamName = groups[currentTeamIdx];
       document.getElementById('popquiz-team').textContent = teamName;
 
-      // Choose a random question
       currentPopIdx = Math.floor(Math.random() * popquizQuestions.length);
       const questionObj = popquizQuestions[currentPopIdx];
       document.getElementById('popquiz-question').textContent = questionObj.q;
 
-      // Reset timer & UI
       popTimeLeft = 15;
       document.getElementById('popquiz-timer').textContent = popTimeLeft;
       document.getElementById('popquiz-show-answer').classList.add('hidden');
       document.getElementById('popquiz-answer').classList.add('hidden');
       document.getElementById('popquiz-mark').classList.add('hidden');
 
-      // Show popquiz screen
       document.getElementById('popquiz-screen').classList.remove('hidden');
 
-      // Start countdown
       popTimerId = setInterval(() => {
         popTimeLeft--;
         if (popTimeLeft >= 0) {
@@ -692,13 +688,11 @@
         if (popTimeLeft === 0) {
           clearInterval(popTimerId);
           document.getElementById('popquiz-timer').textContent = "Time's Up!";
-          // Now allow showing the answer
           document.getElementById('popquiz-show-answer').classList.remove('hidden');
         }
       }, 1000);
     }
 
-    // Show answer when clicked
     document.getElementById('popquiz-show-answer').addEventListener('click', () => {
       const answer = popquizQuestions[currentPopIdx].a;
       const answerDiv = document.getElementById('popquiz-answer');
@@ -708,7 +702,6 @@
       document.getElementById('popquiz-mark').classList.remove('hidden');
     });
 
-    // If marked correct, award 1 point; if incorrect, no point. Then hide popquiz and show round-controls
     document.getElementById('popquiz-correct').addEventListener('click', () => {
       const teamName = groups[currentTeamIdx];
       scores[teamName] += 1;
@@ -722,7 +715,6 @@
     function endPopQuiz() {
       clearInterval(popTimerId);
       document.getElementById('popquiz-screen').classList.add('hidden');
-      // Now show the normal round-controls (Next Round / End Game)
       document.getElementById('round-controls').classList.remove('hidden');
     }
 
